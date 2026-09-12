@@ -65,9 +65,7 @@ export interface DbLoanRow {
   renewCount?: number | null;
 }
 
-export function mapDbBookToBook(row: DbBookRow, fallback?: Book): Book {
-  const category: BookCategory =
-    (row.category as BookCategory) || fallback?.category || 'Literatura Brasileira';
+export function mapDbBookToBook(row: DbBookRow, fallback?: Partial<Book>): Book {
   const totalCopies = row.total_copies ?? row.totalCopies ?? fallback?.totalCopies ?? 1;
   const availableCopies =
     row.available_copies ??
@@ -80,7 +78,6 @@ export function mapDbBookToBook(row: DbBookRow, fallback?: Book): Book {
     id: String(row.id),
     title: row.title || fallback?.title || 'Título Desconhecido',
     author: row.author || fallback?.author || 'Autor Desconhecido',
-    category,
     isbn: row.isbn || fallback?.isbn || undefined,
     year: row.year || (row.created_at ? new Date(row.created_at).getFullYear() : fallback?.year || 2024),
     publisher: row.publisher || fallback?.publisher || undefined,
@@ -91,7 +88,6 @@ export function mapDbBookToBook(row: DbBookRow, fallback?: Book): Book {
     totalCopies,
     availableCopies,
     status,
-    tags: Array.isArray(row.tags) ? row.tags : (fallback?.tags || [category.split(' ')[0], 'Acervo Viegas']),
     addedAt: row.added_at
       ? row.added_at.slice(0, 10)
       : row.created_at
@@ -134,7 +130,6 @@ export function mapDbLoanToLoan(
     bookId: String(row.book_id || row.bookId || book?.id || ''),
     bookTitle: book?.title || row.book_title || row.bookTitle || 'Livro do Acervo',
     bookAuthor: book?.author || row.book_author || row.bookAuthor || 'Autor',
-    bookCategory: book?.category || (row.book_category as BookCategory) || 'Literatura Brasileira',
     bookCoverColor: book?.coverColor || row.book_cover_color || 'bg-red-600',
     userId: String(row.user_id || row.userId || user?.id || ''),
     userName: user?.name || row.user_name || row.userName || 'Leitor Comunitário',
@@ -169,7 +164,6 @@ export async function fetchBooksFromSupabase(supabase: SupabaseClient): Promise<
         id: String(row.id),
         title: row.title || 'Título Desconhecido',
         author: row.author || 'Autor Desconhecido',
-        category: (row.category as BookCategory) || 'Literatura Brasileira',
         coverColor: row.coverColor || 'bg-red-700',
       };
       return mapDbBookToBook(row, fallback);

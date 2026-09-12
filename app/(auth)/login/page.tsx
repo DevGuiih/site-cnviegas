@@ -197,7 +197,7 @@ export default function LoginPage() {
           {/* Visitor link */}
           <div className="pt-2 text-center border-t border-zinc-100 dark:border-zinc-800">
             <Link
-              href="/books"
+              href="/"
               className="text-xs text-zinc-500 hover:text-red-600 inline-flex items-center gap-1 font-semibold"
             >
               <Eye className="w-3.5 h-3.5" />

@@ -16,16 +16,6 @@ import {
   LogIn,
 } from 'lucide-react';
 
-const INTERESTS = [
-  'Literatura Brasileira',
-  'Teoria Social & Crítica',
-  'Filosofia',
-  'História & Política',
-  'Feminismo & Gênero',
-  'Lutas Antirracistas',
-  'Ecologia & Povos Originários',
-  'Poesia & Zines Marginais',
-];
 
 export default function RegisterPage() {
   const router = useRouter();

@@ -16,23 +16,11 @@ export interface User {
 
 export type BookStatus = 'available' | 'borrowed' | 'reserved' | 'maintenance';
 
-export type BookCategory = 
-  | 'Literatura Brasileira'
-  | 'Teoria Social & Crítica'
-  | 'Filosofia'
-  | 'História & Política'
-  | 'Feminismo & Gênero'
-  | 'Lutas Antirracistas'
-  | 'Ecologia & Saberes Indígenas'
-  | 'Poesia & Artes'
-  | 'Fanzines & Revistas'
-  | 'Outros';
 
 export interface Book {
   id: string;
   title: string;
   author: string;
-  category: BookCategory;
   isbn?: string;
   year?: number;
   publisher?: string;

@@ -11,13 +11,14 @@ import { EditBookModal } from '../components/EditBookModal';
 import { Book } from '../types/library';
 import {
   BookOpen,
+  Library,
   Search,
   PlusCircle,
   Loader2,
   RefreshCw,
 } from 'lucide-react';
 
-export default function HomePage() {
+export default function AcervoGeralPage() {
   const { role } = useAuth();
   const { books, isLoading, refreshData } = useLibrary();
 
@@ -44,11 +45,15 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-semibold text-zinc-300 mb-2">
+                <Library className="w-3.5 h-3.5 text-red-600" />
                 Biblioteca Coletivo Negro Viegas D&apos;Abreu
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+                Acervo Geral
               </h1>
               <p className="text-sm sm:text-base text-zinc-400 mt-1">
-                Acervo • {books.length} {books.length === 1 ? 'livro cadastrado' : 'livros cadastrados'}
+                {books.length} {books.length === 1 ? 'obra cadastrada' : 'obras cadastradas'} no catálogo comunitário
               </p>
             </div>
 

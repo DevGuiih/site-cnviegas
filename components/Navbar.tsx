@@ -67,28 +67,7 @@ export function Navbar() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link
-              href="/"
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                pathname === '/'
-                  ? 'bg-zinc-100 dark:bg-zinc-900 text-red-600 font-bold'
-                  : 'text-zinc-700 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-500 hover:bg-zinc-50 dark:hover:bg-zinc-900'
-              }`}
-            >
-              Início
-            </Link>
-
-            <Link
-              href="/books"
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                pathname === '/books'
-                  ? 'bg-zinc-100 dark:bg-zinc-900 text-red-600 font-bold'
-                  : 'text-zinc-700 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-500 hover:bg-zinc-50 dark:hover:bg-zinc-900'
-              }`}
-            >
-              <Library className="w-4 h-4" />
-              Acervo Geral
-            </Link>
+            
 
             {/* Reader Authenticated Links */}
             {role === 'reader' && (
@@ -228,17 +207,14 @@ export function Navbar() {
           <Link
             href="/"
             onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-lg text-base font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium transition-colors ${
+              pathname === '/' || pathname === '/books'
+                ? 'text-red-600 font-bold bg-zinc-100 dark:bg-zinc-900'
+                : 'text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+            }`}
           >
-            Início
-          </Link>
-
-          <Link
-            href="/books"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-lg text-base font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-          >
-            Acervo Geral Completo
+            <Library className="w-4 h-4" />
+            Acervo Geral
           </Link>
 
           {role === 'reader' && (

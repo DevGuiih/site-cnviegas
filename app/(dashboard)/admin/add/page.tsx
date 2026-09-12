@@ -12,18 +12,6 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
-const CATEGORIES: BookCategory[] = [
-  'Literatura Brasileira',
-  'Teoria Social & Crítica',
-  'Filosofia',
-  'História & Política',
-  'Feminismo & Gênero',
-  'Lutas Antirracistas',
-  'Ecologia & Saberes Indígenas',
-  'Poesia & Artes',
-  'Fanzines & Revistas',
-  'Outros',
-];
 
 const SOLID_COLORS = [
   { label: 'Vermelho Sólido', value: 'bg-red-600' },
@@ -38,7 +26,6 @@ export default function AdminAddBookPage() {
 
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
-  const [category, setCategory] = useState<BookCategory>('Literatura Brasileira');
   const [publisher, setPublisher] = useState('');
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [isbn, setIsbn] = useState('');

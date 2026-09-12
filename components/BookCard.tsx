@@ -44,9 +44,6 @@ export function BookCard({ book, onSelect, onEdit, onLoan }: BookCardProps) {
 
         {/* Top Badges */}
         <div className="relative z-10 flex items-start justify-between gap-2">
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-black/70 text-white border border-white/20">
-            {book.category}
-          </span>
 
           <div className="flex items-center gap-1.5">
             {book.featured && (

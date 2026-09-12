@@ -365,23 +365,6 @@ export default function ReaderDashboardPage() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="text-xs py-2.5 px-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-              >
-                <option value="all">Todas as Seções</option>
-                <option value="Literatura Brasileira">Literatura Brasileira</option>
-                <option value="Teoria Social & Crítica">Teoria Social & Crítica</option>
-                <option value="Filosofia">Filosofia</option>
-                <option value="História & Política">História & Política</option>
-                <option value="Feminismo & Gênero">Feminismo & Gênero</option>
-                <option value="Lutas Antirracistas">Lutas Antirracistas</option>
-                <option value="Ecologia & Saberes Indígenas">Ecologia & Saberes Indígenas</option>
-                <option value="Poesia & Artes">Poesia & Artes</option>
-                <option value="Fanzines & Revistas">Fanzines & Revistas</option>
-                <option value="Outros">Outros</option>
-              </select>
               <span className="text-xs text-zinc-500 whitespace-nowrap">
                 {filteredCatalog.length} livros
               </span>
@@ -431,9 +414,6 @@ export default function ReaderDashboardPage() {
                   className="p-5 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs"
                 >
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">
-                      {loan.bookCategory || 'Literatura'}
-                    </span>
                     <h3 className="text-base font-bold text-black dark:text-white">
                       {loan.bookTitle}
                     </h3>

@@ -22,19 +22,6 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-const ALL_CATEGORIES: BookCategory[] = [
-  'Literatura Brasileira',
-  'Teoria Social & Crítica',
-  'Filosofia',
-  'História & Política',
-  'Feminismo & Gênero',
-  'Lutas Antirracistas',
-  'Ecologia & Saberes Indígenas',
-  'Poesia & Artes',
-  'Fanzines & Revistas',
-  'Outros',
-];
-
 export default function AdminDashboardPage() {
   const {
     books,
@@ -63,7 +50,6 @@ export default function AdminDashboardPage() {
   // New book inline form state
   const [newTitle, setNewTitle] = useState('');
   const [newAuthor, setNewAuthor] = useState('');
-  const [newCategory, setNewCategory] = useState<BookCategory>('Literatura Brasileira');
   const [newPublisher, setNewPublisher] = useState('');
   const [newYear, setNewYear] = useState<number>(new Date().getFullYear());
   const [newIsbn, setNewIsbn] = useState('');
@@ -184,7 +170,7 @@ export default function AdminDashboardPage() {
           </button>
 
           <Link
-            href="/books"
+            href="/"
             className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold flex items-center gap-1.5 border border-zinc-800"
           >
             <BookOpen className="w-4 h-4" />

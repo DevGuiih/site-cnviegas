@@ -65,11 +65,11 @@ function getInitialStorage<T>(key: string, defaultValue: T): T {
 }
 
 export function LibraryProvider({ children }: { children: React.ReactNode }) {
-  const [books, setBooks] = useState<Book[]>(() => getInitialStorage(STORAGE_KEYS.BOOKS, []));
-  const [loans, setLoans] = useState<Loan[]>(() => getInitialStorage(STORAGE_KEYS.LOANS, []));
-  const [users, setUsers] = useState<User[]>(() => getInitialStorage(STORAGE_KEYS.USERS, []));
-  const [reviews, setReviews] = useState<ReadingReview[]>(() => getInitialStorage(STORAGE_KEYS.REVIEWS, []));
-  const [wishlist, setWishlist] = useState<string[]>(() => getInitialStorage(STORAGE_KEYS.WISHLIST, []));
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loans, setLoans] = useState<Loan[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [reviews, setReviews] = useState<ReadingReview[]>([]);
+  const [wishlist, setWishlist] = useState<string[]>([]);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(true);
@@ -144,15 +144,10 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem(STORAGE_KEYS.BOOKS, JSON.stringify(activeBooks));
       }
 
-      // If Supabase has profiles, merge or set them
+      // Use profiles from Supabase when available
       let activeUsers = users;
       if (dbProfiles && dbProfiles.length > 0) {
         const mergedUsers = [...dbProfiles];
-        for (const initU of INITIAL_USERS) {
-          if (!mergedUsers.some((u) => u.id === initU.id || u.email === initU.email)) {
-            mergedUsers.push(initU);
-          }
-        }
         saveUsers(mergedUsers);
         activeUsers = mergedUsers;
       }
@@ -181,6 +176,12 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
 
     async function loadInitialData() {
       try {
+        setBooks(getInitialStorage(STORAGE_KEYS.BOOKS, []));
+        setLoans(getInitialStorage(STORAGE_KEYS.LOANS, []));
+        setUsers(getInitialStorage(STORAGE_KEYS.USERS, []));
+        setReviews(getInitialStorage(STORAGE_KEYS.REVIEWS, []));
+        setWishlist(getInitialStorage(STORAGE_KEYS.WISHLIST, []));
+
         const [dbBooks, dbProfiles] = await Promise.all([
           fetchBooksFromSupabase(supabase),
           fetchProfilesFromSupabase(supabase),
@@ -194,14 +195,9 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem(STORAGE_KEYS.BOOKS, JSON.stringify(activeBooks));
         }
 
-        let activeUsers = INITIAL_USERS;
+        let activeUsers = getInitialStorage(STORAGE_KEYS.USERS, []);
         if (dbProfiles && dbProfiles.length > 0) {
           const mergedUsers = [...dbProfiles];
-          for (const initU of INITIAL_USERS) {
-            if (!mergedUsers.some((u) => u.id === initU.id || u.email === initU.email)) {
-              mergedUsers.push(initU);
-            }
-          }
           saveUsers(mergedUsers);
           activeUsers = mergedUsers;
         }
