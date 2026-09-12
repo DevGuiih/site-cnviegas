@@ -66,9 +66,9 @@ function getInitialStorage<T>(key: string, defaultValue: T): T {
 
 export function LibraryProvider({ children }: { children: React.ReactNode }) {
   const [books, setBooks] = useState<Book[]>(() => getInitialStorage(STORAGE_KEYS.BOOKS, []));
-  const [loans, setLoans] = useState<Loan[]>(() => getInitialStorage(STORAGE_KEYS.LOANS, INITIAL_LOANS));
-  const [users, setUsers] = useState<User[]>(() => getInitialStorage(STORAGE_KEYS.USERS, INITIAL_USERS));
-  const [reviews, setReviews] = useState<ReadingReview[]>(() => getInitialStorage(STORAGE_KEYS.REVIEWS, INITIAL_REVIEWS));
+  const [loans, setLoans] = useState<Loan[]>(() => getInitialStorage(STORAGE_KEYS.LOANS, []));
+  const [users, setUsers] = useState<User[]>(() => getInitialStorage(STORAGE_KEYS.USERS, []));
+  const [reviews, setReviews] = useState<ReadingReview[]>(() => getInitialStorage(STORAGE_KEYS.REVIEWS, []));
   const [wishlist, setWishlist] = useState<string[]>(() => getInitialStorage(STORAGE_KEYS.WISHLIST, []));
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);

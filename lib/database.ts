@@ -1,13 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Book, Loan, User, BookCategory, BookStatus } from '../types/library';
-import { INITIAL_BOOKS } from '../data/initial-data';
 import { profileToUser, ProfileRow } from './profile';
 
-// Map initial books by ID and Title for fast fallback lookup
-const INITIAL_BOOKS_MAP = new Map(INITIAL_BOOKS.map((b) => [b.id, b]));
-const INITIAL_BOOKS_BY_TITLE = new Map(
-  INITIAL_BOOKS.map((b) => [b.title.toLowerCase().trim(), b])
-);
 
 export function parseNumericBookId(id: string | number): number | string {
   if (typeof id === 'number') return id;
@@ -171,10 +165,13 @@ export async function fetchBooksFromSupabase(supabase: SupabaseClient): Promise<
     }
 
     return (data as DbBookRow[]).map((row) => {
-      const fallback =
-        INITIAL_BOOKS_MAP.get(String(row.id)) ||
-        INITIAL_BOOKS_MAP.get(`book-${row.id}`) ||
-        (row.title ? INITIAL_BOOKS_BY_TITLE.get(row.title.toLowerCase().trim()) : undefined);
+      const fallback = {
+        id: String(row.id),
+        title: row.title || 'Título Desconhecido',
+        author: row.author || 'Autor Desconhecido',
+        category: (row.category as BookCategory) || 'Literatura Brasileira',
+        coverColor: row.coverColor || 'bg-red-700',
+      };
       return mapDbBookToBook(row, fallback);
     });
   } catch (err) {
