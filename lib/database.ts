@@ -83,8 +83,6 @@ export function mapDbBookToBook(row: DbBookRow, fallback?: Partial<Book>): Book 
     publisher: row.publisher || fallback?.publisher || undefined,
     pages: row.pages || fallback?.pages || undefined,
     coverColor: row.cover_color || row.coverColor || fallback?.coverColor || 'bg-red-600',
-    description: row.description || row.notes || fallback?.description || 'Obra cadastrada no acervo comunitário.',
-    location: row.location || fallback?.location || 'Estante A - Prateleira 1',
     totalCopies,
     availableCopies,
     status,

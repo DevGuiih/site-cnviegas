@@ -149,18 +149,7 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
             </div>
 
             {/* Location */}
-            <div className="space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
-                Localização Física (Estante / Prateleira) *
-              </label>
-              <input
-                type="text"
-                value={formData.location || ''}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                required
-                className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-              />
-            </div>
+            
 
             {/* ISBN */}
             <div className="space-y-1">

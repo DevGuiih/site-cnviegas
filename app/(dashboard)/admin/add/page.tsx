@@ -29,7 +29,6 @@ export default function AdminAddBookPage() {
   const [publisher, setPublisher] = useState('');
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [isbn, setIsbn] = useState('');
-  const [location, setLocation] = useState('Estante A - Prateleira 1');
   const [copies, setCopies] = useState(2);
   const [description, setDescription] = useState('');
   const [coverColor, setCoverColor] = useState('bg-red-600');
@@ -186,20 +185,6 @@ export default function AdminAddBookPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-black dark:text-white">
-                    Localização Física (Estante / Prateleira) *
-                  </label>
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Ex: Estante A - Prateleira 2"
-                    required
-                    className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                  />
-                </div>
-
                 <div className="space-y-1">
                   <label className="block text-xs font-bold text-black dark:text-white">
                     ISBN

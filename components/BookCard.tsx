@@ -118,10 +118,6 @@ export function BookCard({ book, onSelect, onEdit, onLoan }: BookCardProps) {
             </span>
           </div>
 
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5 truncate">
-            <MapPin className="w-3.5 h-3.5 text-red-600 shrink-0" />
-            <span className="truncate">{book.location}</span>
-          </p>
 
           <p className="text-xs text-zinc-700 dark:text-zinc-300 line-clamp-2 leading-relaxed">
             {book.description}

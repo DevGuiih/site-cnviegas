@@ -26,8 +26,6 @@ export interface Book {
   publisher?: string;
   pages?: number;
   coverColor?: string; // Gradient or background color style
-  description: string;
-  location: string; // Ex: 'Estante A - Prateleira 2'
   totalCopies: number;
   availableCopies: number;
   status: BookStatus;

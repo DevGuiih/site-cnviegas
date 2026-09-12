@@ -53,7 +53,6 @@ export default function AdminDashboardPage() {
   const [newPublisher, setNewPublisher] = useState('');
   const [newYear, setNewYear] = useState<number>(new Date().getFullYear());
   const [newIsbn, setNewIsbn] = useState('');
-  const [newLocation, setNewLocation] = useState('Estante A - Prateleira 1');
   const [newCopies, setNewCopies] = useState(2);
   const [newDescription, setNewDescription] = useState('');
   const newCoverColor = 'bg-red-600';
@@ -372,26 +371,6 @@ export default function AdminDashboardPage() {
                 Acervo por Categoria
               </h3>
 
-              <div className="space-y-2 text-xs">
-                {ALL_CATEGORIES.slice(0, 6).map((cat) => {
-                  const count = books.filter((b) => b.category === cat).length;
-                  const pct = Math.round((count / (books.length || 1)) * 100);
-                  return (
-                    <div key={cat} className="space-y-1">
-                      <div className="flex justify-between text-zinc-700 dark:text-zinc-300">
-                        <span className="truncate">{cat}</span>
-                        <span className="font-bold">{count} ({pct}%)</span>
-                      </div>
-                      <div className="h-1.5 w-full rounded-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
-                        <div
-                          className="h-full bg-red-600 rounded-full"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
 
           </div>
@@ -415,19 +394,6 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="text-xs py-2.5 px-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-              >
-                <option value="all">Todas as Seções</option>
-                {ALL_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-
               <button
                 onClick={() => setActiveTab('add-book')}
                 className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 shadow whitespace-nowrap"
@@ -501,17 +467,7 @@ export default function AdminDashboardPage() {
                 <label className="block text-xs font-bold text-black dark:text-white">
                   Categoria / Seção *
                 </label>
-                <select
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value as BookCategory)}
-                  className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                >
-                  {ALL_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
+                
               </div>
 
               <div className="space-y-1">
@@ -539,19 +495,6 @@ export default function AdminDashboardPage() {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-black dark:text-white">
-                  Localização Física na Sede (Estante) *
-                </label>
-                <input
-                  type="text"
-                  value={newLocation}
-                  onChange={(e) => setNewLocation(e.target.value)}
-                  placeholder="Ex: Estante B - Prateleira 2"
-                  required
-                  className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                />
-              </div>
 
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-black dark:text-white">

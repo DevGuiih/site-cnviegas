@@ -167,31 +167,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Reading Interests Tags */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-black dark:text-white">
-                Quais temas mais te interessam na biblioteca?
-              </label>
-              <div className="flex flex-wrap gap-1.5">
-                {INTERESTS.map((interest) => {
-                  const active = selectedInterests.includes(interest);
-                  return (
-                    <button
-                      type="button"
-                      key={interest}
-                      onClick={() => toggleInterest(interest)}
-                      className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
-                        active
-                          ? 'bg-red-600 border-red-600 text-white font-bold shadow-xs'
-                          : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-red-600'
-                      }`}
-                    >
-                      {interest}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
             {/* Bio / Motivation */}
             <div className="space-y-1">
