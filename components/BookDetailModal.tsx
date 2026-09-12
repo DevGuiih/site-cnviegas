@@ -71,9 +71,9 @@ export function BookDetailModal({
     setShowReviewForm(false);
   };
 
-  const handleQuickBorrow = () => {
+  const handleQuickBorrow = async () => {
     if (role === 'reader' && currentUser) {
-      borrowBook(book.id, currentUser.id, 14);
+      await borrowBook(book.id, currentUser.id, 14);
       onClose();
     } else if (onLoanRequest) {
       onLoanRequest(book);

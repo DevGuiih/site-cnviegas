@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Book, BookCategory } from '../types/library';
 import { useLibrary } from '../context/LibraryContext';
 import { X, Edit, Save } from 'lucide-react';
@@ -11,57 +11,35 @@ interface EditBookModalProps {
   onClose: () => void;
 }
 
-const CATEGORIES: BookCategory[] = [
-  'Literatura Brasileira',
-  'Teoria Social & Crítica',
-  'Filosofia',
-  'História & Política',
-  'Feminismo & Gênero',
-  'Lutas Antirracistas',
-  'Ecologia & Saberes Indígenas',
-  'Poesia & Artes',
-  'Fanzines & Revistas',
-  'Outros',
-];
-
 const SOLID_COLORS = [
-  { label: 'Vermelho Sólido', value: 'bg-red-600' },
+  { label: 'Vermelho Sólido', value: 'bg-red-700' },
   { label: 'Preto Sólido', value: 'bg-black' },
   { label: 'Cinza Escuro', value: 'bg-zinc-900' },
   { label: 'Vermelho Escuro', value: 'bg-red-950' },
 ];
 
-export function EditBookModal({ book, isOpen, onClose }: EditBookModalProps) {
+function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => void }) {
   const { updateBook } = useLibrary();
 
-  const [formData, setFormData] = useState<Partial<Book>>({});
+  const [formData, setFormData] = useState<Partial<Book>>({
+    title: book.title,
+    author: book.author,
+    category: book.category,
+    publisher: book.publisher || '',
+    year: book.year || new Date().getFullYear(),
+    isbn: book.isbn || '',
+    pages: book.pages || 100,
+    location: book.location,
+    totalCopies: book.totalCopies,
+    availableCopies: book.availableCopies,
+    description: book.description,
+    coverColor: book.coverColor && !book.coverColor.includes('from-') ? book.coverColor : 'bg-red-700',
+    tags: book.tags || [],
+  });
 
-  useEffect(() => {
-    if (book) {
-      setFormData({
-        title: book.title,
-        author: book.author,
-        category: book.category,
-        publisher: book.publisher || '',
-        year: book.year || new Date().getFullYear(),
-        isbn: book.isbn || '',
-        pages: book.pages || 100,
-        location: book.location,
-        totalCopies: book.totalCopies,
-        availableCopies: book.availableCopies,
-        description: book.description,
-        coverColor: book.coverColor && !book.coverColor.includes('from-') ? book.coverColor : 'bg-red-600',
-        tags: book.tags || [],
-      });
-    }
-  }, [book]);
-
-  if (!isOpen || !book) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!book) return;
-    updateBook(book.id, formData);
+    await updateBook(book.id, formData);
     onClose();
   };
 
@@ -74,7 +52,7 @@ export function EditBookModal({ book, isOpen, onClose }: EditBookModalProps) {
         {/* Header */}
         <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-950">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950 text-red-600">
+            <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950 text-red-700">
               <Edit className="w-5 h-5" />
             </div>
             <div>
@@ -108,7 +86,7 @@ export function EditBookModal({ book, isOpen, onClose }: EditBookModalProps) {
                 value={formData.title || ''}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 required
-                className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white focus:ring-2 focus:ring-red-600"
+                className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white focus:ring-2 focus:ring-red-700"
               />
             </div>
 
@@ -274,7 +252,7 @@ export function EditBookModal({ book, isOpen, onClose }: EditBookModalProps) {
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow flex items-center gap-1.5"
+              className="px-5 py-2.5 rounded-xl bg-red-700 hover:bg-red-700 text-white text-xs font-bold shadow flex items-center gap-1.5"
             >
               <Save className="w-4 h-4" />
               Salvar Alterações
@@ -284,4 +262,9 @@ export function EditBookModal({ book, isOpen, onClose }: EditBookModalProps) {
       </div>
     </div>
   );
+}
+
+export function EditBookModal({ book, isOpen, onClose }: EditBookModalProps) {
+  if (!isOpen || !book) return null;
+  return <EditBookModalContent key={book.id} book={book} onClose={onClose} />;
 }

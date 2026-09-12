@@ -19,6 +19,7 @@ import {
   Search,
   Database,
   Layers,
+  RefreshCw,
 } from 'lucide-react';
 
 const ALL_CATEGORIES: BookCategory[] = [
@@ -42,6 +43,9 @@ export default function AdminDashboardPage() {
     returnBook,
     renewLoan,
     addBook,
+    refreshData,
+    isLoading,
+    isSupabaseConnected,
   } = useLibrary();
 
   const [activeTab, setActiveTab] = useState<
@@ -66,7 +70,7 @@ export default function AdminDashboardPage() {
   const [newLocation, setNewLocation] = useState('Estante A - Prateleira 1');
   const [newCopies, setNewCopies] = useState(2);
   const [newDescription, setNewDescription] = useState('');
-  const [newCoverColor, setNewCoverColor] = useState('bg-red-600');
+  const newCoverColor = 'bg-red-600';
 
   // Metrics
   const totalTitles = books.length;
@@ -82,11 +86,11 @@ export default function AdminDashboardPage() {
   });
   const readersCount = users.filter((u) => u.role === 'reader').length;
 
-  const handleAddNewBook = (e: React.FormEvent) => {
+  const handleAddNewBook = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newAuthor.trim()) return;
 
-    addBook({
+    await addBook({
       title: newTitle.trim(),
       author: newAuthor.trim(),
       category: newCategory,
@@ -143,6 +147,15 @@ export default function AdminDashboardPage() {
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-600 text-white">
                 Administrador
               </span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
+                  isSupabaseConnected
+                    ? 'bg-zinc-900 text-red-400 border-red-600/30'
+                    : 'bg-zinc-900 text-zinc-400 border-zinc-700'
+                }`}
+              >
+                {isSupabaseConnected ? '● Supabase Conectado' : '○ Modo Local'}
+              </span>
             </div>
             <p className="text-xs text-zinc-400">
               Biblioteca Coletivo Negro Viegas D&apos;Abreu • Controle total de acervo, circulação e comunidade
@@ -151,7 +164,17 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Action shortcut */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => refreshData()}
+            disabled={isLoading}
+            className="px-3.5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold flex items-center gap-1.5 border border-zinc-800 transition-all"
+            title="Recarregar e sincronizar dados com o Supabase"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-red-500 ${isLoading ? 'animate-spin' : ''}`} />
+            {isLoading ? 'Sincronizando...' : 'Sincronizar'}
+          </button>
+
           <button
             onClick={() => setActiveTab('add-book')}
             className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 shadow"

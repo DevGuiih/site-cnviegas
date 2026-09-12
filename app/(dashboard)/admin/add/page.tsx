@@ -48,7 +48,7 @@ export default function AdminAddBookPage() {
   const [coverColor, setCoverColor] = useState('bg-red-600');
   const [tagsInput, setTagsInput] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !author.trim()) return;
 
@@ -57,7 +57,7 @@ export default function AdminAddBookPage() {
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
 
-    addBook({
+    await addBook({
       title: title.trim(),
       author: author.trim(),
       category,

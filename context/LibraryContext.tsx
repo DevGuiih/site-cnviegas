@@ -1,8 +1,19 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { Book, Loan, ReadingReview, User, ToastMessage } from '../types/library';
-import { INITIAL_BOOKS, INITIAL_LOANS, INITIAL_USERS, INITIAL_REVIEWS } from '../data/initial-data';
+import { createClient } from '../lib/supabase/client';
+import {
+  fetchBooksFromSupabase,
+  fetchLoansFromSupabase,
+  fetchProfilesFromSupabase,
+  insertBookToSupabase,
+  updateBookInSupabase,
+  deleteBookFromSupabase,
+  insertLoanToSupabase,
+  returnLoanInSupabase,
+  renewLoanInSupabase,
+} from '../lib/database';
 
 interface LibraryContextType {
   books: Book[];
@@ -11,14 +22,17 @@ interface LibraryContextType {
   reviews: ReadingReview[];
   wishlist: string[];
   toasts: ToastMessage[];
+  isLoading: boolean;
+  isSupabaseConnected: boolean;
+  refreshData: () => Promise<void>;
   addToast: (title: string, message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
   removeToast: (id: string) => void;
-  addBook: (bookData: Omit<Book, 'id' | 'addedAt'>) => Book;
-  updateBook: (id: string, updatedFields: Partial<Book>) => void;
-  deleteBook: (id: string) => void;
-  borrowBook: (bookId: string, userId: string, days?: number, notes?: string) => { success: boolean; message: string };
-  returnBook: (loanId: string, notes?: string) => { success: boolean; message: string };
-  renewLoan: (loanId: string, extraDays?: number) => { success: boolean; message: string };
+  addBook: (bookData: Omit<Book, 'id' | 'addedAt'>) => Promise<Book>;
+  updateBook: (id: string, updatedFields: Partial<Book>) => Promise<void>;
+  deleteBook: (id: string) => Promise<void>;
+  borrowBook: (bookId: string, userId: string, days?: number, notes?: string) => Promise<{ success: boolean; message: string }>;
+  returnBook: (loanId: string, notes?: string) => Promise<{ success: boolean; message: string }>;
+  renewLoan: (loanId: string, extraDays?: number) => Promise<{ success: boolean; message: string }>;
   toggleWishlist: (bookId: string) => void;
   isWishlisted: (bookId: string) => boolean;
   addReview: (bookId: string, userId: string, userName: string, rating: number, comment: string) => void;
@@ -39,90 +53,205 @@ const STORAGE_KEYS = {
   WISHLIST: 'cnviegas_library_wishlist',
 };
 
+function getInitialStorage<T>(key: string, defaultValue: T): T {
+  if (typeof window === 'undefined') return defaultValue;
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved) return JSON.parse(saved);
+  } catch {
+    // Ignore JSON parse errors on SSR/hydration
+  }
+  return defaultValue;
+}
+
 export function LibraryProvider({ children }: { children: React.ReactNode }) {
-  const [books, setBooks] = useState<Book[]>(INITIAL_BOOKS);
-  const [loans, setLoans] = useState<Loan[]>(INITIAL_LOANS);
-  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
-  const [reviews, setReviews] = useState<ReadingReview[]>(INITIAL_REVIEWS);
-  const [wishlist, setWishlist] = useState<string[]>([]);
+  const [books, setBooks] = useState<Book[]>(() => getInitialStorage(STORAGE_KEYS.BOOKS, []));
+  const [loans, setLoans] = useState<Loan[]>(() => getInitialStorage(STORAGE_KEYS.LOANS, INITIAL_LOANS));
+  const [users, setUsers] = useState<User[]>(() => getInitialStorage(STORAGE_KEYS.USERS, INITIAL_USERS));
+  const [reviews, setReviews] = useState<ReadingReview[]>(() => getInitialStorage(STORAGE_KEYS.REVIEWS, INITIAL_REVIEWS));
+  const [wishlist, setWishlist] = useState<string[]>(() => getInitialStorage(STORAGE_KEYS.WISHLIST, []));
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(true);
 
-  // Load from localStorage on mount
-  useEffect(() => {
-    try {
-      const savedBooks = localStorage.getItem(STORAGE_KEYS.BOOKS);
-      if (savedBooks) setBooks(JSON.parse(savedBooks));
+  const supabase = useMemo(() => createClient(), []);
 
-      const savedLoans = localStorage.getItem(STORAGE_KEYS.LOANS);
-      if (savedLoans) setLoans(JSON.parse(savedLoans));
+  const addToast = useCallback(
+    (title: string, message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') => {
+      const id = `toast-${Date.now()}-${Math.random()}`;
+      const newToast: ToastMessage = { id, title, message, type };
+      setToasts((prev) => [...prev, newToast]);
 
-      const savedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
-      if (savedUsers) setUsers(JSON.parse(savedUsers));
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 4000);
+    },
+    []
+  );
 
-      const savedReviews = localStorage.getItem(STORAGE_KEYS.REVIEWS);
-      if (savedReviews) setReviews(JSON.parse(savedReviews));
-
-      const savedWishlist = localStorage.getItem(STORAGE_KEYS.WISHLIST);
-      if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
-    } catch (e) {
-      console.error('Error loading library data from localStorage', e);
-    }
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // Save to localStorage whenever state changes
-  const saveBooks = (newBooks: Book[]) => {
+  // Save helpers
+  const saveBooks = useCallback((newBooks: Book[]) => {
     setBooks(newBooks);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.BOOKS, JSON.stringify(newBooks));
     }
-  };
+  }, []);
 
-  const saveLoans = (newLoans: Loan[]) => {
+  const saveLoans = useCallback((newLoans: Loan[]) => {
     setLoans(newLoans);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.LOANS, JSON.stringify(newLoans));
     }
-  };
+  }, []);
 
-  const saveUsers = (newUsers: User[]) => {
+  const saveUsers = useCallback((newUsers: User[]) => {
     setUsers(newUsers);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(newUsers));
     }
-  };
+  }, []);
 
-  const saveReviews = (newReviews: ReadingReview[]) => {
+  const saveReviews = useCallback((newReviews: ReadingReview[]) => {
     setReviews(newReviews);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(newReviews));
     }
-  };
+  }, []);
 
-  const saveWishlist = (newWishlist: string[]) => {
+  const saveWishlist = useCallback((newWishlist: string[]) => {
     setWishlist(newWishlist);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.WISHLIST, JSON.stringify(newWishlist));
     }
-  };
+  }, []);
 
-  const addToast = (title: string, message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') => {
-    const id = `toast-${Date.now()}-${Math.random()}`;
-    const newToast: ToastMessage = { id, title, message, type };
-    setToasts((prev) => [...prev, newToast]);
+  // Fetch all library data from Supabase
+  const refreshData = useCallback(async () => {
+    try {
+      const [dbBooks, dbProfiles] = await Promise.all([
+        fetchBooksFromSupabase(supabase),
+        fetchProfilesFromSupabase(supabase),
+      ]);
 
-    setTimeout(() => {
-      removeToast(id);
-    }, 4000);
-  };
+      // Set books directly from Supabase
+      const activeBooks = dbBooks || [];
+      setBooks(activeBooks);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEYS.BOOKS, JSON.stringify(activeBooks));
+      }
 
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+      // If Supabase has profiles, merge or set them
+      let activeUsers = users;
+      if (dbProfiles && dbProfiles.length > 0) {
+        const mergedUsers = [...dbProfiles];
+        for (const initU of INITIAL_USERS) {
+          if (!mergedUsers.some((u) => u.id === initU.id || u.email === initU.email)) {
+            mergedUsers.push(initU);
+          }
+        }
+        saveUsers(mergedUsers);
+        activeUsers = mergedUsers;
+      }
 
-  const addBook = (bookData: Omit<Book, 'id' | 'addedAt'>): Book => {
+      // Fetch loans with mapped books and users
+      const dbLoans = await fetchLoansFromSupabase(supabase, activeBooks, activeUsers);
+      if (dbLoans && dbLoans.length > 0) {
+        setLoans(dbLoans);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(STORAGE_KEYS.LOANS, JSON.stringify(dbLoans));
+        }
+      }
+
+      setIsSupabaseConnected(true);
+    } catch (err) {
+      console.warn('Conexão ao Supabase falhou, usando cache local:', err);
+      setIsSupabaseConnected(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [supabase, users, saveUsers]);
+
+  // Initial load from Supabase on mount & realtime subscription
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadInitialData() {
+      try {
+        const [dbBooks, dbProfiles] = await Promise.all([
+          fetchBooksFromSupabase(supabase),
+          fetchProfilesFromSupabase(supabase),
+        ]);
+
+        if (!isMounted) return;
+
+        const activeBooks = dbBooks || [];
+        setBooks(activeBooks);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(STORAGE_KEYS.BOOKS, JSON.stringify(activeBooks));
+        }
+
+        let activeUsers = INITIAL_USERS;
+        if (dbProfiles && dbProfiles.length > 0) {
+          const mergedUsers = [...dbProfiles];
+          for (const initU of INITIAL_USERS) {
+            if (!mergedUsers.some((u) => u.id === initU.id || u.email === initU.email)) {
+              mergedUsers.push(initU);
+            }
+          }
+          saveUsers(mergedUsers);
+          activeUsers = mergedUsers;
+        }
+
+        const dbLoans = await fetchLoansFromSupabase(supabase, activeBooks, activeUsers);
+        if (!isMounted) return;
+
+        if (dbLoans && dbLoans.length > 0) {
+          setLoans(dbLoans);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(STORAGE_KEYS.LOANS, JSON.stringify(dbLoans));
+          }
+        }
+
+        setIsSupabaseConnected(true);
+      } catch (err) {
+        console.warn('Conexão ao Supabase falhou, usando cache local:', err);
+        if (isMounted) setIsSupabaseConnected(false);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    loadInitialData();
+
+    // Subscribe to realtime database changes
+    const channel = supabase
+      .channel('public_library_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'books' }, () => {
+        loadInitialData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'loans' }, () => {
+        loadInitialData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+        loadInitialData();
+      })
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, saveUsers]);
+
+  const addBook = async (bookData: Omit<Book, 'id' | 'addedAt'>): Promise<Book> => {
+    const tempId = `book-${Date.now()}`;
     const newBook: Book = {
       ...bookData,
-      id: `book-${Date.now()}`,
+      id: tempId,
       addedAt: new Date().toISOString().split('T')[0],
       status: bookData.availableCopies > 0 ? 'available' : 'borrowed',
     };
@@ -130,10 +259,24 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
     const updated = [newBook, ...books];
     saveBooks(updated);
     addToast('Livro Cadastrado!', `"${newBook.title}" foi adicionado com sucesso ao acervo.`);
+
+    // Persist to Supabase
+    try {
+      const res = await insertBookToSupabase(supabase, bookData);
+      if (res.success && res.data?.id) {
+        const persistedId = String(res.data.id);
+        const fixedBooks = updated.map((b) => (b.id === tempId ? { ...b, id: persistedId } : b));
+        saveBooks(fixedBooks);
+        return { ...newBook, id: persistedId };
+      }
+    } catch (e) {
+      console.warn('Erro ao sincronizar livro com o Supabase:', e);
+    }
+
     return newBook;
   };
 
-  const updateBook = (id: string, updatedFields: Partial<Book>) => {
+  const updateBook = async (id: string, updatedFields: Partial<Book>) => {
     const updated = books.map((b) => {
       if (b.id === id) {
         const next = { ...b, ...updatedFields };
@@ -147,16 +290,35 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
 
     saveBooks(updated);
     addToast('Acervo Atualizado', 'As informações do livro foram salvas.');
+
+    // Persist to Supabase
+    try {
+      await updateBookInSupabase(supabase, id, updatedFields);
+    } catch (e) {
+      console.warn('Erro ao atualizar livro no Supabase:', e);
+    }
   };
 
-  const deleteBook = (id: string) => {
+  const deleteBook = async (id: string) => {
     const target = books.find((b) => b.id === id);
     const updated = books.filter((b) => b.id !== id);
     saveBooks(updated);
     addToast('Livro Removido', `O livro "${target?.title || id}" foi removido do catálogo.`, 'info');
+
+    // Persist to Supabase
+    try {
+      await deleteBookFromSupabase(supabase, id);
+    } catch (e) {
+      console.warn('Erro ao excluir livro no Supabase:', e);
+    }
   };
 
-  const borrowBook = (bookId: string, userId: string, days: number = 14, notes?: string) => {
+  const borrowBook = async (
+    bookId: string,
+    userId: string,
+    days: number = 14,
+    notes?: string
+  ): Promise<{ success: boolean; message: string }> => {
     const book = books.find((b) => b.id === bookId);
     if (!book) {
       addToast('Erro', 'Livro não encontrado no acervo.', 'error');
@@ -180,8 +342,9 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
     const dueDate = new Date();
     dueDate.setDate(today.getDate() + days);
 
+    const tempLoanId = `loan-${Date.now()}`;
     const newLoan: Loan = {
-      id: `loan-${Date.now()}`,
+      id: tempLoanId,
       bookId: book.id,
       bookTitle: book.title,
       bookAuthor: book.author,
@@ -200,7 +363,7 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
     // Update book copies
     const updatedBooks = books.map((b) => {
       if (b.id === bookId) {
-        const nextAvail = b.availableCopies - 1;
+        const nextAvail = Math.max(0, b.availableCopies - 1);
         return {
           ...b,
           availableCopies: nextAvail,
@@ -219,10 +382,31 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
       'success'
     );
 
+    // Persist to Supabase
+    try {
+      const res = await insertLoanToSupabase(supabase, {
+        bookId: book.id,
+        userId: user.id,
+        borrowedAt: today.toISOString(),
+        dueDate: dueDate.toISOString(),
+        notes: notes || 'Empréstimo comunitário regular.',
+      });
+      if (res.success && res.data?.id) {
+        const realId = String(res.data.id);
+        const fixedLoans = [newLoan, ...loans].map((l) => (l.id === tempLoanId ? { ...l, id: realId } : l));
+        saveLoans(fixedLoans);
+      }
+    } catch (e) {
+      console.warn('Erro ao salvar empréstimo no Supabase:', e);
+    }
+
     return { success: true, message: 'Empréstimo realizado com sucesso' };
   };
 
-  const returnBook = (loanId: string, notes?: string) => {
+  const returnBook = async (
+    loanId: string,
+    notes?: string
+  ): Promise<{ success: boolean; message: string }> => {
     const loan = loans.find((l) => l.id === loanId);
     if (!loan) {
       addToast('Erro', 'Registro de empréstimo não localizado.', 'error');
@@ -266,10 +450,21 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
     saveBooks(updatedBooks);
 
     addToast('Devolução Confirmada!', `O livro "${loan.bookTitle}" foi devolvido ao acervo.`);
+
+    // Persist to Supabase
+    try {
+      await returnLoanInSupabase(supabase, loanId, loan.bookId, notes);
+    } catch (e) {
+      console.warn('Erro ao atualizar devolução no Supabase:', e);
+    }
+
     return { success: true, message: 'Livro devolvido com sucesso' };
   };
 
-  const renewLoan = (loanId: string, extraDays: number = 7) => {
+  const renewLoan = async (
+    loanId: string,
+    extraDays: number = 7
+  ): Promise<{ success: boolean; message: string }> => {
     const loan = loans.find((l) => l.id === loanId);
     if (!loan) {
       addToast('Erro', 'Empréstimo não encontrado.', 'error');
@@ -299,6 +494,14 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
 
     saveLoans(updatedLoans);
     addToast('Prazo Renovado!', `Data de devolução prorrogada para ${newDueDate}.`);
+
+    // Persist to Supabase
+    try {
+      await renewLoanInSupabase(supabase, loanId, newDueDate, loan.userId, loan.dueDate);
+    } catch (e) {
+      console.warn('Erro ao renovar empréstimo no Supabase:', e);
+    }
+
     return { success: true, message: 'Renovado com sucesso' };
   };
 
@@ -350,12 +553,8 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetToDefaultData = () => {
-    saveBooks(INITIAL_BOOKS);
-    saveLoans(INITIAL_LOANS);
-    saveUsers(INITIAL_USERS);
-    saveReviews(INITIAL_REVIEWS);
-    saveWishlist([]);
-    addToast('Banco de Dados Restaurado', 'Os dados de exemplo foram restaurados com sucesso.', 'info');
+    refreshData();
+    addToast('Dados Atualizados', 'O acervo foi sincronizado com o banco de dados.', 'info');
   };
 
   return (
@@ -367,6 +566,9 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
         reviews,
         wishlist,
         toasts,
+        isLoading,
+        isSupabaseConnected,
+        refreshData,
         addToast,
         removeToast,
         addBook,

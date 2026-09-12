@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Biblioteca Coletivo Negro Viegas D'Abreu | Acervo Comunitário",
+  title: "Biblioteca Coletivo Negro Viegas D'Abreu",
   description:
     "Sistema de gestão, consulta e circulação de livros da Biblioteca Comunitária do Coletivo Negro Viegas D'Abreu.",
 };
@@ -41,7 +41,7 @@ export default async function RootLayout({
       lang="pt-BR"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white dark:bg-black text-black dark:text-white selection:bg-red-600 selection:text-white">
+      <body className="min-h-full flex flex-col bg-white dark:bg-black text-black dark:text-white selection:bg-red-700 selection:text-white">
         <AuthProvider initialUser={initialUser}>
           <LibraryProvider>
             <Navbar />

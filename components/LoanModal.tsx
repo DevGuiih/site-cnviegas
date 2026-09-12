@@ -26,12 +26,12 @@ export function LoanModal({ book, isOpen, onClose }: LoanModalProps) {
 
   const isAvailable = book.availableCopies > 0;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAvailable) return;
 
     const targetUserId = role === 'reader' && currentUser ? currentUser.id : selectedUserId;
-    const res = borrowBook(book.id, targetUserId, loanDays, notes);
+    const res = await borrowBook(book.id, targetUserId, loanDays, notes);
     if (res.success) {
       onClose();
     }
