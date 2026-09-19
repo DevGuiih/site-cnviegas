@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLibrary } from '../../../../context/LibraryContext';
-import { BookCategory } from '../../../../types/library';
 import {
   PlusCircle,
   ArrowLeft,
@@ -46,17 +45,13 @@ export default function AdminAddBookPage() {
     await addBook({
       title: title.trim(),
       author: author.trim(),
-      category,
       publisher: publisher.trim(),
       year,
       isbn: isbn.trim(),
-      location: location.trim(),
       totalCopies: copies,
       availableCopies: copies,
-      description: description.trim() || 'Obra catalogada no acervo comunitário.',
       coverColor,
       status: 'available',
-      tags: tags.length > 0 ? tags : [category.split(' ')[0]],
       featured: false,
     });
 
@@ -126,22 +121,7 @@ export default function AdminAddBookPage() {
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-black dark:text-white">
-                    Seção / Categoria *
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as BookCategory)}
-                    className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                  >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -278,9 +258,6 @@ export default function AdminAddBookPage() {
 
           <div className="rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-lg overflow-hidden flex flex-col">
             <div className={`h-44 ${coverColor} p-5 flex flex-col justify-between text-white relative`}>
-              <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold bg-black/70 self-start border border-white/20">
-                {category}
-              </span>
               <div>
                 <p className="text-[11px] font-bold text-white/80 uppercase tracking-widest truncate">
                   {author || 'Nome do Autor'}
@@ -296,7 +273,6 @@ export default function AdminAddBookPage() {
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 {copies} {copies === 1 ? 'exemplar disponível' : 'exemplares disponíveis'}
               </span>
-              <p className="text-zinc-500">📍 {location || 'Localização na estante'}</p>
               <p className="text-zinc-700 dark:text-zinc-300 line-clamp-2">
                 {description || 'A sinopse do livro aparecerá aqui...'}
               </p>

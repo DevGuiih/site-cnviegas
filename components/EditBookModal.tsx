@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Book, BookCategory } from '../types/library';
+import { Book } from '../types/library';
 import { useLibrary } from '../context/LibraryContext';
 import { X, Edit, Save } from 'lucide-react';
 
@@ -24,15 +24,12 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
   const [formData, setFormData] = useState<Partial<Book>>({
     title: book.title,
     author: book.author,
-    category: book.category,
     publisher: book.publisher || '',
     year: book.year || new Date().getFullYear(),
     isbn: book.isbn || '',
     pages: book.pages || 100,
-    location: book.location,
     totalCopies: book.totalCopies,
     availableCopies: book.availableCopies,
-    description: book.description,
     coverColor: book.coverColor && !book.coverColor.includes('from-') ? book.coverColor : 'bg-red-700',
     tags: book.tags || [],
   });
@@ -104,23 +101,7 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
               />
             </div>
 
-            {/* Category */}
-            <div className="space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
-                Categoria / Seção *
-              </label>
-              <select
-                value={formData.category || CATEGORIES[0]}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value as BookCategory })}
-                className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
+            
 
             {/* Publisher */}
             <div className="space-y-1">
@@ -216,19 +197,6 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
               </div>
             </div>
 
-            {/* Description / Synopsis */}
-            <div className="sm:col-span-2 space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
-                Sinopse / Descrição *
-              </label>
-              <textarea
-                value={formData.description || ''}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={3}
-                required
-                className="w-full text-xs p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-              />
-            </div>
           </div>
 
           <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex justify-end gap-2">
