@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLibrary } from '../../../../context/LibraryContext';
-import { BookCategory } from '../../../../types/library';
 import {
   PlusCircle,
   ArrowLeft,
@@ -12,18 +11,6 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
-const CATEGORIES: BookCategory[] = [
-  'Literatura Brasileira',
-  'Teoria Social & Crítica',
-  'Filosofia',
-  'História & Política',
-  'Feminismo & Gênero',
-  'Lutas Antirracistas',
-  'Ecologia & Saberes Indígenas',
-  'Poesia & Artes',
-  'Fanzines & Revistas',
-  'Outros',
-];
 
 const SOLID_COLORS = [
   { label: 'Vermelho Sólido', value: 'bg-red-600' },
@@ -38,17 +25,15 @@ export default function AdminAddBookPage() {
 
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
-  const [category, setCategory] = useState<BookCategory>('Literatura Brasileira');
   const [publisher, setPublisher] = useState('');
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [isbn, setIsbn] = useState('');
-  const [location, setLocation] = useState('Estante A - Prateleira 1');
   const [copies, setCopies] = useState(2);
   const [description, setDescription] = useState('');
   const [coverColor, setCoverColor] = useState('bg-red-600');
   const [tagsInput, setTagsInput] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !author.trim()) return;
 
@@ -57,20 +42,18 @@ export default function AdminAddBookPage() {
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
 
-    addBook({
+    await addBook({
       title: title.trim(),
       author: author.trim(),
-      category,
       publisher: publisher.trim(),
       year,
       isbn: isbn.trim(),
-      location: location.trim(),
       totalCopies: copies,
       availableCopies: copies,
       description: description.trim() || 'Obra catalogada no acervo comunitário.',
       coverColor,
       status: 'available',
-      tags: tags.length > 0 ? tags : [category.split(' ')[0]],
+      tags: tags.length > 0 ? tags : ['Acervo Viegas D\'Abreu'],
       featured: false,
     });
 
@@ -84,12 +67,12 @@ export default function AdminAddBookPage() {
       <div className="flex items-center justify-between">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-2 text-xs font-bold text-zinc-500 hover:text-red-600 transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-bold text-zinc-500 hover:text-red-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Voltar ao Painel Admin
         </Link>
-        <span className="text-xs text-red-600 font-bold">
+        <span className="text-xs text-red-900 font-bold">
           Módulo de Catalogação
         </span>
       </div>
@@ -100,7 +83,7 @@ export default function AdminAddBookPage() {
         <div className="lg:col-span-2 p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-6">
           <div className="space-y-1">
             <h1 className="text-2xl font-black text-black dark:text-white flex items-center gap-2">
-              <PlusCircle className="w-6 h-6 text-red-600" />
+              <PlusCircle className="w-6 h-6 text-red-900" />
               Adicionar Novo Livro ao Acervo
             </h1>
             <p className="text-xs text-zinc-500">
@@ -140,22 +123,7 @@ export default function AdminAddBookPage() {
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-black dark:text-white">
-                    Seção / Categoria *
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as BookCategory)}
-                    className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                  >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -199,20 +167,6 @@ export default function AdminAddBookPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-black dark:text-white">
-                    Localização Física (Estante / Prateleira) *
-                  </label>
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Ex: Estante A - Prateleira 2"
-                    required
-                    className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                  />
-                </div>
-
                 <div className="space-y-1">
                   <label className="block text-xs font-bold text-black dark:text-white">
                     ISBN
@@ -306,9 +260,6 @@ export default function AdminAddBookPage() {
 
           <div className="rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-lg overflow-hidden flex flex-col">
             <div className={`h-44 ${coverColor} p-5 flex flex-col justify-between text-white relative`}>
-              <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold bg-black/70 self-start border border-white/20">
-                {category}
-              </span>
               <div>
                 <p className="text-[11px] font-bold text-white/80 uppercase tracking-widest truncate">
                   {author || 'Nome do Autor'}
@@ -320,11 +271,10 @@ export default function AdminAddBookPage() {
             </div>
 
             <div className="p-4 space-y-2 text-xs">
-              <span className="inline-flex items-center gap-1 text-red-600 font-bold">
+              <span className="inline-flex items-center gap-1 text-red-900 font-bold">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 {copies} {copies === 1 ? 'exemplar disponível' : 'exemplares disponíveis'}
               </span>
-              <p className="text-zinc-500">📍 {location || 'Localização na estante'}</p>
               <p className="text-zinc-700 dark:text-zinc-300 line-clamp-2">
                 {description || 'A sinopse do livro aparecerá aqui...'}
               </p>

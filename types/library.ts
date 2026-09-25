@@ -9,36 +9,25 @@ export interface User {
   joinedAt: string;
   phone?: string;
   bio?: string;
+  interests?: string[];
   activeLoansCount?: number;
   maxLoansAllowed?: number;
 }
 
 export type BookStatus = 'available' | 'borrowed' | 'reserved' | 'maintenance';
 
-export type BookCategory = 
-  | 'Literatura Brasileira'
-  | 'Teoria Social & Crítica'
-  | 'Filosofia'
-  | 'História & Política'
-  | 'Feminismo & Gênero'
-  | 'Lutas Antirracistas'
-  | 'Ecologia & Saberes Indígenas'
-  | 'Poesia & Artes'
-  | 'Fanzines & Revistas'
-  | 'Outros';
 
 export interface Book {
   id: string;
   title: string;
   author: string;
-  category: BookCategory;
   isbn?: string;
   year?: number;
   publisher?: string;
   pages?: number;
   coverColor?: string; // Gradient or background color style
-  description: string;
-  location: string; // Ex: 'Estante A - Prateleira 2'
+  description?: string;
+  location?: string;
   totalCopies: number;
   availableCopies: number;
   status: BookStatus;
@@ -54,7 +43,6 @@ export interface Loan {
   bookId: string;
   bookTitle: string;
   bookAuthor: string;
-  bookCategory?: BookCategory;
   bookCoverColor?: string;
   userId: string;
   userName: string;

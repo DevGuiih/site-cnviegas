@@ -7,7 +7,7 @@ import { BookCard } from '../../../components/BookCard';
 import { BookDetailModal } from '../../../components/BookDetailModal';
 import { LoanModal } from '../../../components/LoanModal';
 import { EditBookModal } from '../../../components/EditBookModal';
-import { Book, BookCategory } from '../../../types/library';
+import { Book } from '../../../types/library';
 import {
   Shield,
   BookOpen,
@@ -18,21 +18,8 @@ import {
   Clock,
   Search,
   Database,
-  Layers,
+  RefreshCw,
 } from 'lucide-react';
-
-const ALL_CATEGORIES: BookCategory[] = [
-  'Literatura Brasileira',
-  'Teoria Social & Crítica',
-  'Filosofia',
-  'História & Política',
-  'Feminismo & Gênero',
-  'Lutas Antirracistas',
-  'Ecologia & Saberes Indígenas',
-  'Poesia & Artes',
-  'Fanzines & Revistas',
-  'Outros',
-];
 
 export default function AdminDashboardPage() {
   const {
@@ -42,6 +29,9 @@ export default function AdminDashboardPage() {
     returnBook,
     renewLoan,
     addBook,
+    refreshData,
+    isLoading,
+    isSupabaseConnected,
   } = useLibrary();
 
   const [activeTab, setActiveTab] = useState<
@@ -49,7 +39,6 @@ export default function AdminDashboardPage() {
   >('overview');
 
   const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
 
   // Modals
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -59,14 +48,12 @@ export default function AdminDashboardPage() {
   // New book inline form state
   const [newTitle, setNewTitle] = useState('');
   const [newAuthor, setNewAuthor] = useState('');
-  const [newCategory, setNewCategory] = useState<BookCategory>('Literatura Brasileira');
   const [newPublisher, setNewPublisher] = useState('');
   const [newYear, setNewYear] = useState<number>(new Date().getFullYear());
   const [newIsbn, setNewIsbn] = useState('');
-  const [newLocation, setNewLocation] = useState('Estante A - Prateleira 1');
   const [newCopies, setNewCopies] = useState(2);
   const [newDescription, setNewDescription] = useState('');
-  const [newCoverColor, setNewCoverColor] = useState('bg-red-600');
+  const newCoverColor = 'bg-red-600';
 
   // Metrics
   const totalTitles = books.length;
@@ -82,24 +69,22 @@ export default function AdminDashboardPage() {
   });
   const readersCount = users.filter((u) => u.role === 'reader').length;
 
-  const handleAddNewBook = (e: React.FormEvent) => {
+  const handleAddNewBook = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newAuthor.trim()) return;
 
-    addBook({
+    await addBook({
       title: newTitle.trim(),
       author: newAuthor.trim(),
-      category: newCategory,
       publisher: newPublisher.trim(),
       year: newYear,
       isbn: newIsbn.trim(),
-      location: newLocation.trim(),
       totalCopies: newCopies,
       availableCopies: newCopies,
       description: newDescription.trim() || 'Obra catalogada no acervo comunitário.',
       coverColor: newCoverColor,
       status: 'available',
-      tags: [newCategory.split(' ')[0], 'Acervo Viegas D\'Abreu'],
+      tags: ['Acervo Viegas D\'Abreu'],
       featured: false,
     });
 
@@ -113,14 +98,11 @@ export default function AdminDashboardPage() {
   };
 
   const filteredBooks = books.filter((b) => {
-    if (categoryFilter !== 'all' && b.category !== categoryFilter) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
       return (
         b.title.toLowerCase().includes(q) ||
-        b.author.toLowerCase().includes(q) ||
-        b.category.toLowerCase().includes(q) ||
-        b.location.toLowerCase().includes(q)
+        b.author.toLowerCase().includes(q)
       );
     }
     return true;
@@ -143,6 +125,15 @@ export default function AdminDashboardPage() {
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-600 text-white">
                 Administrador
               </span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
+                  isSupabaseConnected
+                    ? 'bg-zinc-900 text-red-400 border-red-600/30'
+                    : 'bg-zinc-900 text-zinc-400 border-zinc-700'
+                }`}
+              >
+                {isSupabaseConnected ? '● Supabase Conectado' : '○ Modo Local'}
+              </span>
             </div>
             <p className="text-xs text-zinc-400">
               Biblioteca Coletivo Negro Viegas D&apos;Abreu • Controle total de acervo, circulação e comunidade
@@ -151,7 +142,17 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Action shortcut */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => refreshData()}
+            disabled={isLoading}
+            className="px-3.5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold flex items-center gap-1.5 border border-zinc-800 transition-all"
+            title="Recarregar e sincronizar dados com o Supabase"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-red-900 ${isLoading ? 'animate-spin' : ''}`} />
+            {isLoading ? 'Sincronizando...' : 'Sincronizar'}
+          </button>
+
           <button
             onClick={() => setActiveTab('add-book')}
             className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 shadow"
@@ -161,7 +162,7 @@ export default function AdminDashboardPage() {
           </button>
 
           <Link
-            href="/books"
+            href="/"
             className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold flex items-center gap-1.5 border border-zinc-800"
           >
             <BookOpen className="w-4 h-4" />
@@ -254,7 +255,7 @@ export default function AdminDashboardPage() {
               <p className="text-2xl sm:text-3xl font-black text-black dark:text-white mt-1">
                 {totalTitles}
               </p>
-              <span className="text-[10px] text-red-600 font-bold mt-1 block">
+              <span className="text-[10px] text-red-900 font-bold mt-1 block">
                 Total de títulos catalogados
               </span>
             </div>
@@ -275,7 +276,7 @@ export default function AdminDashboardPage() {
               <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
                 Empréstimos Ativos
               </span>
-              <p className="text-2xl sm:text-3xl font-black text-red-600 mt-1">
+              <p className="text-2xl sm:text-3xl font-black text-red-900 mt-1">
                 {activeLoans.length}
               </p>
               <span className="text-[10px] text-zinc-500 mt-1 block">
@@ -287,7 +288,7 @@ export default function AdminDashboardPage() {
               <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
                 Devoluções Atrasadas
               </span>
-              <p className={`text-2xl sm:text-3xl font-black mt-1 ${overdueLoans.length > 0 ? 'text-red-600' : 'text-black dark:text-white'}`}>
+              <p className={`text-2xl sm:text-3xl font-black mt-1 ${overdueLoans.length > 0 ? 'text-red-900' : 'text-black dark:text-white'}`}>
                 {overdueLoans.length}
               </p>
               <span className="text-[10px] text-zinc-500 mt-1 block">
@@ -316,12 +317,12 @@ export default function AdminDashboardPage() {
             <div className="md:col-span-2 p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-black dark:text-white flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-red-600" />
+                  <Clock className="w-4 h-4 text-red-900" />
                   Circulação Recente & Pendências de Devolução
                 </h3>
                 <button
                   onClick={() => setActiveTab('loans')}
-                  className="text-xs font-bold text-red-600 hover:underline"
+                  className="text-xs font-bold text-red-900 hover:underline"
                 >
                   Ver todos os {loans.length} →
                 </button>
@@ -356,35 +357,6 @@ export default function AdminDashboardPage() {
               )}
             </div>
 
-            {/* Category breakdown */}
-            <div className="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
-              <h3 className="text-base font-bold text-black dark:text-white flex items-center gap-2">
-                <Layers className="w-4 h-4 text-red-600" />
-                Acervo por Categoria
-              </h3>
-
-              <div className="space-y-2 text-xs">
-                {ALL_CATEGORIES.slice(0, 6).map((cat) => {
-                  const count = books.filter((b) => b.category === cat).length;
-                  const pct = Math.round((count / (books.length || 1)) * 100);
-                  return (
-                    <div key={cat} className="space-y-1">
-                      <div className="flex justify-between text-zinc-700 dark:text-zinc-300">
-                        <span className="truncate">{cat}</span>
-                        <span className="font-bold">{count} ({pct}%)</span>
-                      </div>
-                      <div className="h-1.5 w-full rounded-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
-                        <div
-                          className="h-full bg-red-600 rounded-full"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
           </div>
 
         </div>
@@ -400,25 +372,12 @@ export default function AdminDashboardPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Filtrar por título, autor, estante..."
+                placeholder="Filtrar por título ou autor..."
                 className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:ring-2 focus:ring-red-600"
               />
             </div>
 
             <div className="flex items-center gap-2">
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="text-xs py-2.5 px-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-              >
-                <option value="all">Todas as Seções</option>
-                {ALL_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-
               <button
                 onClick={() => setActiveTab('add-book')}
                 className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 shadow whitespace-nowrap"
@@ -449,7 +408,7 @@ export default function AdminDashboardPage() {
         <div className="max-w-3xl mx-auto p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-6">
           <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
             <h2 className="text-xl font-black text-black dark:text-white flex items-center gap-2">
-              <PlusCircle className="w-5 h-5 text-red-600" />
+              <PlusCircle className="w-5 h-5 text-red-900" />
               Cadastrar Nova Obra no Acervo
             </h2>
             <p className="text-xs text-zinc-500">
@@ -488,22 +447,6 @@ export default function AdminDashboardPage() {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-black dark:text-white">
-                  Categoria / Seção *
-                </label>
-                <select
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value as BookCategory)}
-                  className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                >
-                  {ALL_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
 
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-black dark:text-white">
@@ -530,19 +473,6 @@ export default function AdminDashboardPage() {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-black dark:text-white">
-                  Localização Física na Sede (Estante) *
-                </label>
-                <input
-                  type="text"
-                  value={newLocation}
-                  onChange={(e) => setNewLocation(e.target.value)}
-                  placeholder="Ex: Estante B - Prateleira 2"
-                  required
-                  className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                />
-              </div>
 
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-black dark:text-white">
@@ -651,7 +581,7 @@ export default function AdminDashboardPage() {
                           {isReturned ? (
                             <span className="text-zinc-500">Devolvido ({loan.returnedDate})</span>
                           ) : (
-                            <span className={isOverdue ? 'text-red-600 font-bold' : ''}>
+                            <span className={isOverdue ? 'text-red-900 font-bold' : ''}>
                               {loan.dueDate}
                             </span>
                           )}
@@ -663,7 +593,7 @@ export default function AdminDashboardPage() {
                                 ? 'bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300'
                                 : isOverdue
                                 ? 'bg-red-600 text-white'
-                                : 'bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-400 border border-red-200 dark:border-red-900'
+                                : 'bg-red-50 text-red-900 dark:bg-red-950 dark:text-red-400 border border-red-200 dark:border-red-900'
                             }`}
                           >
                             {isReturned ? 'Devolvido' : isOverdue ? 'Atrasado' : 'Em Aberto'}
@@ -757,7 +687,7 @@ export default function AdminDashboardPage() {
                     </p>
                     <p className="text-zinc-700 dark:text-zinc-300">
                       📚 <strong>Livros em posse:</strong>{' '}
-                      <span className="font-bold text-red-600">
+                      <span className="font-bold text-red-900">
                         {userActiveLoans.length}
                       </span>{' '}
                       livro(s)

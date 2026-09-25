@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
 import { useLibrary } from '../../context/LibraryContext';
 import { BookCard } from '../../components/BookCard';
@@ -20,6 +21,7 @@ import {
   Search,
   Sparkles,
   ShieldCheck,
+  UserX,
 } from 'lucide-react';
 
 export default function ReaderDashboardPage() {
@@ -40,22 +42,41 @@ export default function ReaderDashboardPage() {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [loanBook, setLoanBook] = useState<Book | null>(null);
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const currentUserId = currentUser?.id || 'user-reader-1';
+  if (!currentUser) {
+    return (
+      <div className="flex-1 py-16 px-4 sm:px-6 lg:px-8 max-w-2xl mx-auto w-full bg-white dark:bg-black text-black dark:text-white">
+        <div className="py-16 text-center rounded-3xl bg-zinc-50 dark:bg-zinc-950 border border-dashed border-zinc-300 dark:border-zinc-800 p-8 space-y-4">
+          <UserX className="w-12 h-12 text-zinc-400 mx-auto" />
+          <h1 className="text-lg font-bold text-black dark:text-white">
+            Não foi possível carregar seu perfil de leitor
+          </h1>
+          <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+            Sua sessão pode ter expirado ou seu perfil ainda não foi sincronizado. Entre novamente para acessar seus empréstimos e seu cartão de leitor.
+          </p>
+          <Link
+            href="/login"
+            className="inline-block px-5 py-2.5 rounded-xl bg-red-700 text-white text-xs font-bold shadow hover:bg-red-700 transition-all"
+          >
+            Ir para o Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const currentUserId = currentUser.id;
   const activeLoans = getUserActiveLoans(currentUserId);
   const pastLoans = getUserPastLoans(currentUserId);
   const wishlistedBooks = books.filter((b) => wishlist.includes(b.id));
 
   // Filter for the catalog tab
   const filteredCatalog = books.filter((b) => {
-    if (selectedCategory !== 'all' && b.category !== selectedCategory) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
       return (
         b.title.toLowerCase().includes(q) ||
-        b.author.toLowerCase().includes(q) ||
-        b.category.toLowerCase().includes(q)
+        b.author.toLowerCase().includes(q)
       );
     }
     return true;
@@ -76,20 +97,20 @@ export default function ReaderDashboardPage() {
       {/* Header Profile Bar (Solid Colors) */}
       <div className="rounded-3xl bg-black text-white p-6 sm:p-8 border border-zinc-900 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-red-600 flex items-center justify-center text-3xl shadow-lg border border-red-500/30">
+          <div className="w-16 h-16 rounded-2xl bg-red-700 flex items-center justify-center text-3xl shadow-lg border border-red-500/30">
             {currentUser?.avatar || '📚'}
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-black tracking-tight">
-                Olá, {currentUser?.name || 'Carlos Henrique'}!
+                Olá, {currentUser.name}!
               </h1>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-zinc-900 text-red-400 border border-red-600/40">
                 Membro Ativo
               </span>
             </div>
             <p className="text-xs text-zinc-400">
-              {currentUser?.email || 'leitor@cnviegas.org'} • Biblioteca Coletivo Negro Viegas D&apos;Abreu
+              {currentUser.email} • Biblioteca Coletivo Negro Viegas D&apos;Abreu
             </p>
           </div>
         </div>
@@ -97,7 +118,7 @@ export default function ReaderDashboardPage() {
         {/* Quota & Quick metrics */}
         <div className="flex items-center gap-3 bg-zinc-900 p-3.5 rounded-2xl border border-zinc-800 text-xs">
           <div className="text-center px-3 border-r border-zinc-800">
-            <span className="block text-lg font-black text-red-600">
+            <span className="block text-lg font-black text-red-700">
               {activeLoans.length} / 3
             </span>
             <span className="text-[11px] text-zinc-400">Livros Retirados</span>
@@ -124,7 +145,7 @@ export default function ReaderDashboardPage() {
           onClick={() => setActiveTab('active-loans')}
           className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'active-loans'
-              ? 'bg-red-600 text-white shadow-sm'
+              ? 'bg-red-700 text-white shadow-sm'
               : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900'
           }`}
         >
@@ -132,7 +153,7 @@ export default function ReaderDashboardPage() {
           Meus Empréstimos Ativos
           {activeLoans.length > 0 && (
             <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-              activeTab === 'active-loans' ? 'bg-white text-black' : 'bg-red-600 text-white'
+              activeTab === 'active-loans' ? 'bg-white text-black' : 'bg-red-700 text-white'
             }`}>
               {activeLoans.length}
             </span>
@@ -143,7 +164,7 @@ export default function ReaderDashboardPage() {
           onClick={() => setActiveTab('catalog')}
           className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'catalog'
-              ? 'bg-red-600 text-white shadow-sm'
+              ? 'bg-red-700 text-white shadow-sm'
               : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900'
           }`}
         >
@@ -155,7 +176,7 @@ export default function ReaderDashboardPage() {
           onClick={() => setActiveTab('history')}
           className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'history'
-              ? 'bg-red-600 text-white shadow-sm'
+              ? 'bg-red-700 text-white shadow-sm'
               : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900'
           }`}
         >
@@ -167,7 +188,7 @@ export default function ReaderDashboardPage() {
           onClick={() => setActiveTab('wishlist')}
           className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'wishlist'
-              ? 'bg-red-600 text-white shadow-sm'
+              ? 'bg-red-700 text-white shadow-sm'
               : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900'
           }`}
         >
@@ -179,7 +200,7 @@ export default function ReaderDashboardPage() {
           onClick={() => setActiveTab('membership-card')}
           className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'membership-card'
-              ? 'bg-red-600 text-white shadow-sm'
+              ? 'bg-red-700 text-white shadow-sm'
               : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900'
           }`}
         >
@@ -203,7 +224,7 @@ export default function ReaderDashboardPage() {
             </div>
             <button
               onClick={() => setActiveTab('catalog')}
-              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto shadow-sm"
+              className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto shadow-sm"
             >
               <BookOpen className="w-4 h-4" />
               Pegar Outro Livro
@@ -221,7 +242,7 @@ export default function ReaderDashboardPage() {
               </p>
               <button
                 onClick={() => setActiveTab('catalog')}
-                className="px-5 py-2.5 rounded-xl bg-red-600 text-white text-xs font-bold shadow hover:bg-red-700 transition-all"
+                className="px-5 py-2.5 rounded-xl bg-red-700 text-white text-xs font-bold shadow hover:bg-red-700 transition-all"
               >
                 Explorar Acervo Agora
               </button>
@@ -241,7 +262,7 @@ export default function ReaderDashboardPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-1">
                         <span className="text-[11px] font-bold text-red-600 uppercase tracking-wider">
-                          {loan.bookCategory || 'Empréstimo Ativo'}
+                          Empréstimo Ativo
                         </span>
                         <h3 className="text-lg font-black text-black dark:text-white leading-tight">
                           {loan.bookTitle}
@@ -253,9 +274,9 @@ export default function ReaderDashboardPage() {
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shrink-0 ${
                           isOverdue
-                            ? 'bg-red-600 text-white border border-red-700'
+                            ? 'bg-red-700 text-white border border-red-700'
                             : isDueSoon
-                            ? 'bg-zinc-900 text-white border border-red-600/40'
+                            ? 'bg-zinc-900 text-white border border-red-700/40'
                             : 'bg-zinc-100 text-black dark:bg-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-800'
                         }`}
                       >
@@ -266,12 +287,12 @@ export default function ReaderDashboardPage() {
                           </>
                         ) : isDueSoon ? (
                           <>
-                            <Clock className="w-3.5 h-3.5 text-red-600" />
+                            <Clock className="w-3.5 h-3.5 text-red-700" />
                             Vence em {daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}
                           </>
                         ) : (
                           <>
-                            <CheckCircle className="w-3.5 h-3.5 text-red-600" />
+                            <CheckCircle className="w-3.5 h-3.5 text-red-700" />
                             Em dia ({daysRemaining}d restantes)
                           </>
                         )}
@@ -288,7 +309,7 @@ export default function ReaderDashboardPage() {
                       </div>
                       <div>
                         <span className="text-[10px] text-zinc-400 block">Devolução prevista</span>
-                        <strong className={`font-mono ${isOverdue ? 'text-red-600 font-black' : 'text-black dark:text-white'}`}>
+                        <strong className={`font-mono ${isOverdue ? 'text-red-700 font-black' : 'text-black dark:text-white'}`}>
                           {loan.dueDate}
                         </strong>
                       </div>
@@ -312,7 +333,7 @@ export default function ReaderDashboardPage() {
 
                       <button
                         onClick={() => returnBook(loan.id)}
-                        className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
                       >
                         <CheckCircle className="w-3.5 h-3.5" />
                         Confirmar Devolução
@@ -337,12 +358,12 @@ export default function ReaderDashboardPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar livros para pegar emprestado..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:ring-2 focus:ring-red-600"
+                className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:ring-2 focus:ring-red-700"
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500">
-                {filteredCatalog.length} livros encontrados
+              <span className="text-xs text-zinc-500 whitespace-nowrap">
+                {filteredCatalog.length} livros
               </span>
             </div>
           </div>
@@ -390,9 +411,6 @@ export default function ReaderDashboardPage() {
                   className="p-5 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs"
                 >
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">
-                      {loan.bookCategory || 'Literatura'}
-                    </span>
                     <h3 className="text-base font-bold text-black dark:text-white">
                       {loan.bookTitle}
                     </h3>
@@ -408,7 +426,7 @@ export default function ReaderDashboardPage() {
                     </div>
 
                     <span className="px-3 py-1 rounded-full bg-zinc-100 text-black dark:bg-zinc-900 dark:text-white text-xs font-bold flex items-center gap-1 border border-zinc-200 dark:border-zinc-800">
-                      <CheckCircle className="w-3.5 h-3.5 text-red-600" />
+                      <CheckCircle className="w-3.5 h-3.5 text-red-700" />
                       Concluído
                     </span>
                   </div>
@@ -488,8 +506,8 @@ export default function ReaderDashboardPage() {
                 <span className="text-[10px] text-red-400 uppercase tracking-widest block font-bold">
                   Nome do Leitor
                 </span>
-                <p className="text-xl font-black text-white">{currentUser?.name || 'Carlos Henrique'}</p>
-                <p className="text-xs text-zinc-400">{currentUser?.email || 'leitor@cnviegas.org'}</p>
+                <p className="text-xl font-black text-white">{currentUser.name}</p>
+                <p className="text-xs text-zinc-400">{currentUser.email}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-4 border-t border-zinc-800 text-xs">

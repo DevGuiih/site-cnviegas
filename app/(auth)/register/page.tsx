@@ -10,21 +10,12 @@ import {
   UserPlus,
   User,
   Mail,
+  Lock,
   Phone,
   Sparkles,
   LogIn,
 } from 'lucide-react';
 
-const INTERESTS = [
-  'Literatura Brasileira',
-  'Teoria Social & Crítica',
-  'Filosofia',
-  'História & Política',
-  'Feminismo & Gênero',
-  'Lutas Antirracistas',
-  'Ecologia & Povos Originários',
-  'Poesia & Zines Marginais',
-];
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -33,10 +24,12 @@ export default function RegisterPage() {
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [bio, setBio] = useState('');
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const toggleInterest = (interest: string) => {
     setSelectedInterests((prev) =>
@@ -44,27 +37,26 @@ export default function RegisterPage() {
     );
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
 
+    setError(null);
     setLoading(true);
-    setTimeout(() => {
-      const bioWithInterests = `${bio ? bio + ' | ' : ''}Interesses: ${
-        selectedInterests.join(', ') || 'Geral'
-      }`;
-      const ok = register(name, email, phone, bioWithInterests);
-      setLoading(false);
+    const result = await register(name, email, password, phone, bio, selectedInterests);
+    setLoading(false);
 
-      if (ok) {
-        addToast(
-          'Bem-vindo(a) ao Coletivo!',
-          `Cadastro realizado com sucesso para ${name}. Seu cartão de leitor está ativo!`,
-          'success'
-        );
-        router.push('/readers');
-      }
-    }, 400);
+    if (!result.ok) {
+      setError(result.error ?? 'Não foi possível concluir o cadastro.');
+      return;
+    }
+
+    addToast(
+      'Bem-vindo(a) ao Coletivo!',
+      `Cadastro realizado com sucesso para ${name}. Seu cartão de leitor está ativo!`,
+      'success'
+    );
+    router.push('/');
   };
 
   return (
@@ -74,7 +66,7 @@ export default function RegisterPage() {
         {/* Header */}
         <div className="text-center space-y-2">
           <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
-            <div className="w-12 h-12 rounded-2xl bg-red-600 flex items-center justify-center text-white shadow-lg shadow-red-950/30 group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-red-900 flex items-center justify-center text-white shadow-lg shadow-red-950/30 group-hover:scale-105 transition-transform">
               <BookOpen className="w-6 h-6 text-white" />
             </div>
           </Link>
@@ -90,12 +82,12 @@ export default function RegisterPage() {
         <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-5">
           <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
             <span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-red-600" />
+              <Sparkles className="w-3.5 h-3.5 text-red-900" />
               Ficha de Inscrição Comunitária
             </span>
             <Link
               href="/login"
-              className="text-xs font-bold text-red-600 hover:text-red-700"
+              className="text-xs font-bold text-red-900 hover:text-red-900"
             >
               Já tenho conta →
             </Link>
@@ -116,7 +108,7 @@ export default function RegisterPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ex: Mariana Silva"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:ring-2 focus:ring-red-600"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:ring-2 focus:ring-red-900"
                 />
               </div>
             </div>
@@ -134,7 +126,26 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="seuemail@exemplo.com"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:ring-2 focus:ring-red-600"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:ring-2 focus:ring-red-900"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-black dark:text-white">
+                Senha *
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mínimo de 6 caracteres"
+                  required
+                  minLength={6}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:ring-2 focus:ring-red-900"
                 />
               </div>
             </div>
@@ -151,36 +162,11 @@ export default function RegisterPage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="(11) 99999-9999"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:ring-2 focus:ring-red-600"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:ring-2 focus:ring-red-900"
                 />
               </div>
             </div>
 
-            {/* Reading Interests Tags */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-black dark:text-white">
-                Quais temas mais te interessam na biblioteca?
-              </label>
-              <div className="flex flex-wrap gap-1.5">
-                {INTERESTS.map((interest) => {
-                  const active = selectedInterests.includes(interest);
-                  return (
-                    <button
-                      type="button"
-                      key={interest}
-                      onClick={() => toggleInterest(interest)}
-                      className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
-                        active
-                          ? 'bg-red-600 border-red-600 text-white font-bold shadow-xs'
-                          : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-red-600'
-                      }`}
-                    >
-                      {interest}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
             {/* Bio / Motivation */}
             <div className="space-y-1">
@@ -192,15 +178,21 @@ export default function RegisterPage() {
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="Ex: Sou morador do bairro e participo das oficinas culturais..."
                 rows={2}
-                className="w-full text-xs p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white focus:ring-2 focus:ring-red-600"
+                className="w-full text-xs p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white focus:ring-2 focus:ring-red-900"
               />
             </div>
+
+            {error && (
+              <p className="text-sm text-red-900 dark:text-red-400" role="alert">
+                {error}
+              </p>
+            )}
 
             {/* Submit button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-md shadow-red-950/20 transition-all flex items-center justify-center gap-2 hover:scale-101"
+              className="w-full py-3 rounded-xl bg-red-900 hover:bg-red-800 text-white text-sm font-bold shadow-md shadow-red-950/20 transition-all flex items-center justify-center gap-2 hover:scale-101"
             >
               <UserPlus className="w-4 h-4" />
               {loading ? 'Criando Conta...' : 'Concluir Cadastro & Ativar Cartão'}
@@ -210,7 +202,7 @@ export default function RegisterPage() {
           <div className="pt-2 text-center border-t border-zinc-100 dark:border-zinc-800">
             <Link
               href="/login"
-              className="text-xs text-zinc-500 hover:text-red-600 inline-flex items-center gap-1 font-semibold"
+              className="text-xs text-zinc-500 hover:text-red-900 inline-flex items-center gap-1 font-semibold"
             >
               <LogIn className="w-3.5 h-3.5" />
               Já tem cadastro? Faça login aqui

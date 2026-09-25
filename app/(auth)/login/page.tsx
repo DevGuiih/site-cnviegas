@@ -24,35 +24,39 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleStandardLogin = (e: React.FormEvent) => {
+  const handleStandardLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
 
+    setError(null);
     setLoading(true);
-    setTimeout(() => {
-      const ok = login(email, password);
-      setLoading(false);
-      if (ok) {
-        addToast('Bem-vindo!', `Login efetuado com sucesso para ${email}.`);
-        if (email.toLowerCase().includes('admin')) {
-          router.push('/admin');
-        } else {
-          router.push('/readers');
-        }
-      }
-    }, 400);
+    const result = await login(email, password);
+    setLoading(false);
+    if (!result.ok) {
+      setError(result.error ?? 'Não foi possível entrar.');
+      return;
+    }
+    addToast('Bem-vindo!', `Login efetuado com sucesso para ${email}.`);
+    router.push('/');
   };
 
-  const handleDemoLogin = (role: 'reader' | 'admin') => {
-    loginAsDemo(role);
-    if (role === 'admin') {
-      addToast('Modo Admin', 'Conectado como Coordenação do Coletivo.');
-      router.push('/admin');
-    } else {
-      addToast('Modo Leitor', 'Conectado como Carlos Henrique (Membro Leitor).');
-      router.push('/readers');
+  const handleDemoLogin = async (demoRole: 'reader' | 'admin') => {
+    setError(null);
+    setLoading(true);
+    const result = await loginAsDemo(demoRole);
+    setLoading(false);
+    if (!result.ok) {
+      setError(result.error ?? 'Não foi possível entrar com a conta demo.');
+      return;
     }
+    if (demoRole === 'admin') {
+      addToast('Modo Admin', 'Conectado como Coordenação da Biblioteca.');
+    } else {
+      addToast('Modo Leitor', 'Conectado como Leitor Comunitário (Membro Leitor).');
+    }
+    router.push('/');
   };
 
   return (
@@ -62,7 +66,7 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center space-y-2">
           <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
-            <div className="w-12 h-12 rounded-2xl bg-red-600 flex items-center justify-center text-white shadow-lg shadow-red-950/30 group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-red-900 flex items-center justify-center text-white shadow-lg shadow-red-950/30 group-hover:scale-105 transition-transform">
               <BookOpen className="w-6 h-6 text-white" />
             </div>
           </Link>
@@ -76,27 +80,28 @@ export default function LoginPage() {
 
         {/* 1-CLICK DEMO ACCESS CARDS */}
         <div className="p-4 rounded-3xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-md space-y-3">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-red-600 uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-red-600" />
+          <div className="flex items-center gap-1.5 text-xs font-bold text-red-900 uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-red-900" />
             Acesso Rápido de Demonstração (1 Clique)
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <button
               onClick={() => handleDemoLogin('reader')}
-              className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-red-600 hover:shadow-md transition-all text-left group flex flex-col justify-between gap-2"
+              disabled={loading}
+              className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-red-900 hover:shadow-md transition-all text-left group flex flex-col justify-between gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-between">
-                <span className="p-2 rounded-xl bg-red-50 dark:bg-red-950 text-red-600">
+                <span className="p-2 rounded-xl bg-red-50 dark:bg-red-950 text-red-900">
                   <UserCheck className="w-4 h-4" />
                 </span>
-                <span className="text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-bold text-red-900 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded">
                   Leitor
                 </span>
               </div>
               <div>
-                <p className="text-xs font-bold text-black dark:text-white group-hover:text-red-600 transition-colors">
-                  Carlos Henrique
+                <p className="text-xs font-bold text-black dark:text-white group-hover:text-red-900 transition-colors">
+                  Leitor Comunitário
                 </p>
                 <p className="text-[11px] text-zinc-500">Membro Comum</p>
               </div>
@@ -104,7 +109,8 @@ export default function LoginPage() {
 
             <button
               onClick={() => handleDemoLogin('admin')}
-              className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-red-600 hover:shadow-md transition-all text-left group flex flex-col justify-between gap-2"
+              disabled={loading}
+              className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-red-900 hover:shadow-md transition-all text-left group flex flex-col justify-between gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-between">
                 <span className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white">
@@ -115,8 +121,8 @@ export default function LoginPage() {
                 </span>
               </div>
               <div>
-                <p className="text-xs font-bold text-black dark:text-white group-hover:text-red-600 transition-colors">
-                  Coordenação
+                <p className="text-xs font-bold text-black dark:text-white group-hover:text-red-900 transition-colors">
+                  Coordenação da Biblioteca
                 </p>
                 <p className="text-[11px] text-zinc-500">Gestor do Coletivo</p>
               </div>
@@ -132,7 +138,7 @@ export default function LoginPage() {
             </span>
             <Link
               href="/register"
-              className="text-xs font-bold text-red-600 hover:text-red-700"
+              className="text-xs font-bold text-red-900 hover:text-red-900"
             >
               Criar conta nova →
             </Link>
@@ -151,12 +157,9 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="ex: leitor@cnviegas.org ou seu@email.com"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-600"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-900"
                 />
               </div>
-              <p className="text-[10px] text-zinc-400">
-                * Dica: Qualquer e-mail com a palavra &quot;admin&quot; loga com permissões de gestão.
-              </p>
             </div>
 
             <div className="space-y-1">
@@ -170,15 +173,21 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-600"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-900"
                 />
               </div>
             </div>
 
+            {error && (
+              <p className="text-sm text-red-900 dark:text-red-900" role="alert">
+                {error}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-md shadow-red-950/20 transition-all flex items-center justify-center gap-2 hover:scale-101"
+              className="w-full py-3 rounded-xl bg-red-900 hover:bg-red-800 text-white text-sm font-bold shadow-md shadow-red-950/20 transition-all flex items-center justify-center gap-2 hover:scale-101"
             >
               <LogIn className="w-4 h-4" />
               {loading ? 'Entrando...' : 'Entrar no Sistema'}
@@ -188,8 +197,8 @@ export default function LoginPage() {
           {/* Visitor link */}
           <div className="pt-2 text-center border-t border-zinc-100 dark:border-zinc-800">
             <Link
-              href="/books"
-              className="text-xs text-zinc-500 hover:text-red-600 inline-flex items-center gap-1 font-semibold"
+              href="/"
+              className="text-xs text-zinc-500 hover:text-red-900 inline-flex items-center gap-1 font-semibold"
             >
               <Eye className="w-3.5 h-3.5" />
               Apenas consultar o acervo sem autenticação
