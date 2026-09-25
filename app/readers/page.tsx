@@ -42,7 +42,6 @@ export default function ReaderDashboardPage() {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [loanBook, setLoanBook] = useState<Book | null>(null);
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
 
   if (!currentUser) {
     return (
@@ -73,13 +72,11 @@ export default function ReaderDashboardPage() {
 
   // Filter for the catalog tab
   const filteredCatalog = books.filter((b) => {
-    if (selectedCategory !== 'all' && b.category !== selectedCategory) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
       return (
         b.title.toLowerCase().includes(q) ||
-        b.author.toLowerCase().includes(q) ||
-        b.category.toLowerCase().includes(q)
+        b.author.toLowerCase().includes(q)
       );
     }
     return true;
@@ -265,7 +262,7 @@ export default function ReaderDashboardPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-1">
                         <span className="text-[11px] font-bold text-red-600 uppercase tracking-wider">
-                          {loan.bookCategory || 'Empréstimo Ativo'}
+                          Empréstimo Ativo
                         </span>
                         <h3 className="text-lg font-black text-black dark:text-white leading-tight">
                           {loan.bookTitle}

@@ -97,9 +97,6 @@ export function BookDetailModal({
           </button>
 
           <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-black/70 text-white border border-white/20">
-              {book.category}
-            </span>
             <span
               className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
                 isAvailable ? 'bg-black text-white' : 'bg-zinc-800 text-zinc-300'
@@ -156,7 +153,7 @@ export function BookDetailModal({
               </div>
               <div>
                 <p className="font-bold text-black dark:text-white">Localização na Sede</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">{book.location}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">{book.location || 'Acervo Geral'}</p>
               </div>
             </div>
 
@@ -176,14 +173,16 @@ export function BookDetailModal({
           </div>
 
           {/* Synopsis */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-black uppercase tracking-wider text-black dark:text-white">
-              Sinopse & Apresentação
-            </h3>
-            <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
-              {book.description}
-            </p>
-          </div>
+          {book.description && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-black uppercase tracking-wider text-black dark:text-white">
+                Sinopse & Apresentação
+              </h3>
+              <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                {book.description}
+              </p>
+            </div>
+          )}
 
           {/* Tags */}
           {book.tags && book.tags.length > 0 && (

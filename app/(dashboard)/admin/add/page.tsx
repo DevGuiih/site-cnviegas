@@ -50,8 +50,10 @@ export default function AdminAddBookPage() {
       isbn: isbn.trim(),
       totalCopies: copies,
       availableCopies: copies,
+      description: description.trim() || 'Obra catalogada no acervo comunitário.',
       coverColor,
       status: 'available',
+      tags: tags.length > 0 ? tags : ['Acervo Viegas D\'Abreu'],
       featured: false,
     });
 

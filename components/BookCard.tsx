@@ -7,7 +7,6 @@ import { useLibrary } from '../context/LibraryContext';
 import {
   BookOpen,
   Bookmark,
-  MapPin,
   CheckCircle,
   Clock,
   Edit,
@@ -119,9 +118,11 @@ export function BookCard({ book, onSelect, onEdit, onLoan }: BookCardProps) {
           </div>
 
 
-          <p className="text-xs text-zinc-700 dark:text-zinc-300 line-clamp-2 leading-relaxed">
-            {book.description}
-          </p>
+          {book.description && (
+            <p className="text-xs text-zinc-700 dark:text-zinc-300 line-clamp-2 leading-relaxed">
+              {book.description}
+            </p>
+          )}
         </div>
 
         {/* Tags */}

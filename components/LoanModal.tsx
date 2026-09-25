@@ -75,7 +75,7 @@ export function LoanModal({ book, isOpen, onClose }: LoanModalProps) {
               Livro Selecionado
             </span>
             <h4 className="text-base font-black text-black dark:text-white">{book.title}</h4>
-            <p className="text-xs text-zinc-500">{book.author} • {book.category}</p>
+            <p className="text-xs text-zinc-500">{book.author}</p>
             <p className="text-xs text-zinc-400 pt-1">
               Disponibilidade atual: <strong>{book.availableCopies}</strong> de {book.totalCopies} cópias
             </p>

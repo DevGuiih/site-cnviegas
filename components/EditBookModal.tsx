@@ -30,6 +30,7 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
     pages: book.pages || 100,
     totalCopies: book.totalCopies,
     availableCopies: book.availableCopies,
+    description: book.description || '',
     coverColor: book.coverColor && !book.coverColor.includes('from-') ? book.coverColor : 'bg-red-900',
     tags: book.tags || [],
   });
@@ -195,6 +196,20 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Description / Synopsis */}
+            <div className="sm:col-span-2 space-y-1">
+              <label className="block text-xs font-bold text-black dark:text-white">
+                Sinopse / Descrição
+              </label>
+              <textarea
+                value={formData.description || ''}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={3}
+                placeholder="Apresente brevemente o contexto da obra..."
+                className="w-full text-xs p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
+              />
             </div>
 
           </div>

@@ -195,7 +195,7 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem(STORAGE_KEYS.BOOKS, JSON.stringify(activeBooks));
         }
 
-        let activeUsers = getInitialStorage(STORAGE_KEYS.USERS, []);
+        let activeUsers: User[] = getInitialStorage<User[]>(STORAGE_KEYS.USERS, []);
         if (dbProfiles && dbProfiles.length > 0) {
           const mergedUsers = [...dbProfiles];
           saveUsers(mergedUsers);
@@ -344,7 +344,6 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
       bookId: book.id,
       bookTitle: book.title,
       bookAuthor: book.author,
-      bookCategory: book.category,
       bookCoverColor: book.coverColor,
       userId: user.id,
       userName: user.name,

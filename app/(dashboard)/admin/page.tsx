@@ -7,7 +7,7 @@ import { BookCard } from '../../../components/BookCard';
 import { BookDetailModal } from '../../../components/BookDetailModal';
 import { LoanModal } from '../../../components/LoanModal';
 import { EditBookModal } from '../../../components/EditBookModal';
-import { Book, BookCategory } from '../../../types/library';
+import { Book } from '../../../types/library';
 import {
   Shield,
   BookOpen,
@@ -18,7 +18,6 @@ import {
   Clock,
   Search,
   Database,
-  Layers,
   RefreshCw,
 } from 'lucide-react';
 
@@ -40,7 +39,6 @@ export default function AdminDashboardPage() {
   >('overview');
 
   const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
 
   // Modals
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -78,17 +76,15 @@ export default function AdminDashboardPage() {
     await addBook({
       title: newTitle.trim(),
       author: newAuthor.trim(),
-      category: newCategory,
       publisher: newPublisher.trim(),
       year: newYear,
       isbn: newIsbn.trim(),
-      location: newLocation.trim(),
       totalCopies: newCopies,
       availableCopies: newCopies,
       description: newDescription.trim() || 'Obra catalogada no acervo comunitário.',
       coverColor: newCoverColor,
       status: 'available',
-      tags: [newCategory.split(' ')[0], 'Acervo Viegas D\'Abreu'],
+      tags: ['Acervo Viegas D\'Abreu'],
       featured: false,
     });
 
@@ -102,14 +98,11 @@ export default function AdminDashboardPage() {
   };
 
   const filteredBooks = books.filter((b) => {
-    if (categoryFilter !== 'all' && b.category !== categoryFilter) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
       return (
         b.title.toLowerCase().includes(q) ||
-        b.author.toLowerCase().includes(q) ||
-        b.category.toLowerCase().includes(q) ||
-        b.location.toLowerCase().includes(q)
+        b.author.toLowerCase().includes(q)
       );
     }
     return true;
@@ -364,15 +357,6 @@ export default function AdminDashboardPage() {
               )}
             </div>
 
-            {/* Category breakdown */}
-            <div className="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
-              <h3 className="text-base font-bold text-black dark:text-white flex items-center gap-2">
-                <Layers className="w-4 h-4 text-red-900" />
-                Acervo por Categoria
-              </h3>
-
-            </div>
-
           </div>
 
         </div>
@@ -388,7 +372,7 @@ export default function AdminDashboardPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Filtrar por título, autor, estante..."
+                placeholder="Filtrar por título ou autor..."
                 className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:ring-2 focus:ring-red-600"
               />
             </div>
@@ -463,12 +447,6 @@ export default function AdminDashboardPage() {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-black dark:text-white">
-                  Categoria / Seção *
-                </label>
-                
-              </div>
 
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-black dark:text-white">
