@@ -45,29 +45,29 @@ export function Navbar() {
     router.push(href);
   };
 
-  return (
-    <header className="relative z-40 w-full bg-[#C8C1B4] rounded-br-[90px] sm:rounded-br-[140px] lg:rounded-br-[183px] shadow-sm">
-      <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-[30px] h-[108px] sm:h-[144px] lg:h-[183px] flex items-center justify-between gap-4">
+return (
+    <header className="relative z-40 w-full bg-[#C8C1B4] rounded-br-[45px] sm:rounded-br-[65px] lg:rounded-br-[80px] shadow-sm">
+      <div className="w-full px-5 sm:px-8 lg:px-12 h-[68px] sm:h-[76px] lg:h-[84px] flex items-center justify-between gap-4">
         {/* Brand */}
         <Link
           href="/"
-          className="flex items-center gap-4 sm:gap-8 lg:gap-[53px] group min-w-0"
+          className="flex items-center gap-3 sm:gap-4 lg:gap-5 group min-w-0"
         >
           <Image
             src="/images/logo-cnviegas.png"
             alt="Logo Biblioteca CN Viegas"
-            width={131}
-            height={131}
+            width={56}
+            height={56}
             priority
-            className="w-16 h-16 sm:w-24 sm:h-24 lg:w-[131px] lg:h-[131px] rounded-full object-cover shrink-0 transition-transform group-hover:scale-105"
+            className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full object-cover shrink-0 transition-transform group-hover:scale-105"
           />
-          <span className="font-bold text-xl sm:text-3xl lg:text-[48px] leading-tight text-[#524F4A] truncate">
+          <span className="font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-[#524F4A] truncate">
             Biblioteca CN Viegas
           </span>
         </Link>
 
         {/* Right Side: Login or Authenticated Avatar Pop-up */}
-        <div className="relative shrink-0 pr-4 sm:pr-10 lg:pr-16" ref={menuRef}>
+        <div className="relative shrink-0" ref={menuRef}>
           {isAuthenticated && currentUser ? (
             <>
               <button
@@ -75,7 +75,7 @@ export function Navbar() {
                 onClick={() => setMenuOpen((prev) => !prev)}
                 aria-label="Abrir menu do usuário"
                 aria-expanded={menuOpen}
-                className="w-14 h-14 sm:w-20 sm:h-20 lg:w-[108px] lg:h-[108px] rounded-full border-[5px] sm:border-[8px] lg:border-[10px] border-black bg-[#E2E2E2] flex items-center justify-center overflow-hidden hover:scale-105 transition-transform cursor-pointer"
+                className="w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full border-[3px] lg:border-4 border-black bg-[#E2E2E2] flex items-center justify-center overflow-hidden hover:scale-105 transition-transform cursor-pointer"
               >
                 <svg
                   viewBox="0 0 64 64"
@@ -95,7 +95,7 @@ export function Navbar() {
                 <div
                   role="dialog"
                   aria-label={role === 'admin' ? 'Menu do Administrador' : 'Menu do Leitor'}
-                  className="absolute right-2 sm:right-6 lg:right-12 top-full mt-3 z-50 w-[290px] sm:w-[360px] bg-[#EBE3D4] border-[3px] border-[#D29F96] rounded-[30px] shadow-coletivo-card p-6 flex flex-col gap-3"
+                  className="absolute right-0 top-full mt-3 z-50 w-[290px] sm:w-[360px] bg-[#EBE3D4] border-[3px] border-[#D29F96] rounded-[30px] shadow-coletivo-card p-6 flex flex-col gap-3"
                 >
                   <div className="pb-1">
                     <p className="text-2xl sm:text-[30px] font-normal text-black leading-tight truncate">
@@ -170,7 +170,7 @@ export function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="font-bold text-xl sm:text-3xl lg:text-[48px] text-[#524F4A] hover:text-[#3B3935] transition-colors"
+              className="font-bold text-lg sm:text-xl lg:text-2xl text-[#524F4A] hover:text-[#3B3935] transition-colors"
             >
               Login
             </Link>

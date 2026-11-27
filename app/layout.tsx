@@ -35,9 +35,9 @@ export default async function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${inter.variable} h-full antialiased`}
+      className={`${inter.variable} h-full antialiased overscroll-y-none`}
     >
-      <body className="min-h-full flex flex-col bg-coletivo-pattern text-[#F2EDE3] font-sans selection:bg-[#9B2915] selection:text-white">
+      <body className="min-h-full flex flex-col bg-coletivo-pattern text-[#F2EDE3] font-sans overscroll-y-none selection:bg-[#9B2915] selection:text-white">
         <AuthProvider initialUser={initialUser}>
           <LibraryProvider>
             <div className="relative z-10 min-h-screen flex flex-col">

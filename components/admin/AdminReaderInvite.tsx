@@ -6,7 +6,7 @@ import {
   inviteReaderAction,
   fetchAllowedUsersAction,
   deleteAllowedUserAction,
-} from '../../actions/auth-actions';
+} from '../../app/actions/auth-actions';
 import {
   UserPlus,
   Mail,
