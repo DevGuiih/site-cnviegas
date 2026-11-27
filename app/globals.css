@@ -1,26 +1,84 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #711E0F;
+  --foreground: #F2EDE3;
+
+  --vermelho-normal: #9B2915;
+  --vermelho-hover: #842312;
+  --vermelho-active: #711E0F;
+  --vermelho-lighter: #D29F96;
+  --vermelho-light-hover: #C98B81;
+  --vermelho-light-active: #BE7467;
+  --vermelho-dark: #360E07;
+  --vermelho-dark-active: #110502;
+
+  --creme-lighter: #FFFFFF;
+  --creme-light-hover: #F4F0E8;
+  --creme-light-active: #F2EDE3;
+  --creme-normal: #EBE3D4;
+  --creme-normal-hover: #C8C1B4;
+  --creme-normal-active: #ACA69B;
+  --creme-dark: #524F4A;
+  --creme-dark-hover: #3B3935;
+  --creme-dark-active: #1A1917;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-coletivo-red: var(--vermelho-normal);
+  --color-coletivo-red-hover: var(--vermelho-hover);
+  --color-coletivo-red-active: var(--vermelho-active);
+  --color-coletivo-red-lighter: var(--vermelho-lighter);
+  --color-coletivo-red-light-hover: var(--vermelho-light-hover);
+  --color-coletivo-red-light-active: var(--vermelho-light-active);
+  --color-coletivo-red-dark: var(--vermelho-dark);
+
+  --color-creme-lighter: var(--creme-lighter);
+  --color-creme-light-hover: var(--creme-light-hover);
+  --color-creme-light: var(--creme-light-active);
+  --color-creme: var(--creme-normal);
+  --color-creme-hover: var(--creme-normal-hover);
+  --color-creme-active: var(--creme-normal-active);
+  --color-creme-dark: var(--creme-dark);
+  --color-creme-dark-hover: var(--creme-dark-hover);
+  --color-creme-dark-active: var(--creme-dark-active);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--vermelho-active);
+  color: var(--creme-light-active);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+.bg-coletivo-pattern {
+  position: relative;
+  background-color: #711E0F;
+}
+
+.bg-coletivo-pattern::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: #360E07;
+  opacity: 0.42;
+  -webkit-mask-image: url("/images/ladrilho.svg");
+  mask-image: url("/images/ladrilho.svg");
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-size: 240px 240px;
+  mask-size: 240px 240px;
+}
+
+.shadow-coletivo-card {
+  box-shadow: 2px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+
+.shadow-coletivo-btn {
+  box-shadow: 1px 2px 4px 0px rgba(0, 0, 0, 0.25);
 }

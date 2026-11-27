@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Book } from '../types/library';
 import { useLibrary } from '../context/LibraryContext';
-import { X, Edit, Save } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 
 interface EditBookModalProps {
   book: Book | null;
@@ -31,7 +31,10 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
     totalCopies: book.totalCopies,
     availableCopies: book.availableCopies,
     description: book.description || '',
-    coverColor: book.coverColor && !book.coverColor.includes('from-') ? book.coverColor : 'bg-red-900',
+    coverColor:
+      book.coverColor && !book.coverColor.includes('from-')
+        ? book.coverColor
+        : 'bg-red-900',
     tags: book.tags || [],
   });
 
@@ -42,41 +45,38 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs overflow-y-auto"
+      onClick={onClose}
+    >
       <div
-        className="relative w-full max-w-2xl bg-white dark:bg-black rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden my-8"
+        role="dialog"
+        aria-modal="true"
+        className="relative w-full max-w-2xl bg-[#EBE3D4] border-[3px] border-[#D29F96] rounded-[20px] shadow-coletivo-card overflow-hidden my-8 text-[#1A1917]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-950">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950 text-red-900">
-              <Edit className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-lg font-black text-black dark:text-white">
-                Editar Dados do Livro
-              </h3>
-              <p className="text-xs text-zinc-500">ID: {book.id}</p>
-            </div>
+        <div className="p-6 border-b border-[#D29F96] flex items-center justify-between bg-[#D29F96]/40">
+          <div>
+            <h3 className="text-xl sm:text-2xl font-bold text-[#9B2915]">
+              Editar Dados do Livro
+            </h3>
+            <p className="text-xs text-[#524F4A]">ID: {book.id}</p>
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 rounded-full text-zinc-400 hover:text-black dark:hover:text-white"
+            className="p-1.5 text-[#1A1917] hover:text-[#9B2915] cursor-pointer"
             aria-label="Fechar"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            
-            {/* Title */}
             <div className="sm:col-span-2 space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
+              <label className="block text-xs font-bold text-[#524F4A]">
                 Título da Obra *
               </label>
               <input
@@ -84,13 +84,12 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
                 value={formData.title || ''}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 required
-                className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white focus:ring-2 focus:ring-red-900"
+                className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] focus:outline-none focus:border-[#9B2915]"
               />
             </div>
 
-            {/* Author */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
+              <label className="block text-xs font-bold text-[#524F4A]">
                 Autor(a) / Organizador(a) *
               </label>
               <input
@@ -98,71 +97,65 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
                 value={formData.author || ''}
                 onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                 required
-                className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
+                className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] focus:outline-none focus:border-[#9B2915]"
               />
             </div>
 
-            
-
-            {/* Publisher */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
+              <label className="block text-xs font-bold text-[#524F4A]">
                 Editora
               </label>
               <input
                 type="text"
                 value={formData.publisher || ''}
                 onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
-                className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
+                className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] focus:outline-none focus:border-[#9B2915]"
               />
             </div>
 
-            {/* Year */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
+              <label className="block text-xs font-bold text-[#524F4A]">
                 Ano de Publicação
               </label>
               <input
                 type="number"
                 value={formData.year || ''}
-                onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || undefined })}
-                className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
+                onChange={(e) =>
+                  setFormData({ ...formData, year: parseInt(e.target.value) || undefined })
+                }
+                className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] focus:outline-none focus:border-[#9B2915]"
               />
             </div>
 
-            {/* Location */}
-            
-
-            {/* ISBN */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
+              <label className="block text-xs font-bold text-[#524F4A]">
                 ISBN
               </label>
               <input
                 type="text"
                 value={formData.isbn || ''}
                 onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
-                className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
+                className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] focus:outline-none focus:border-[#9B2915]"
               />
             </div>
 
-            {/* Total Copies */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
+              <label className="block text-xs font-bold text-[#524F4A]">
                 Exemplares Totais
               </label>
               <input
                 type="number"
                 min="1"
                 value={formData.totalCopies || 1}
-                onChange={(e) => setFormData({ ...formData, totalCopies: parseInt(e.target.value) || 1 })}
-                className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
+                onChange={(e) =>
+                  setFormData({ ...formData, totalCopies: parseInt(e.target.value) || 1 })
+                }
+                className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] focus:outline-none focus:border-[#9B2915]"
               />
             </div>
 
-            {/* Available Copies */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
+              <label className="block text-xs font-bold text-[#524F4A]">
                 Exemplares Disponíveis
               </label>
               <input
@@ -170,15 +163,16 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
                 min="0"
                 max={formData.totalCopies || 10}
                 value={formData.availableCopies ?? 1}
-                onChange={(e) => setFormData({ ...formData, availableCopies: parseInt(e.target.value) || 0 })}
-                className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
+                onChange={(e) =>
+                  setFormData({ ...formData, availableCopies: parseInt(e.target.value) || 0 })
+                }
+                className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] focus:outline-none focus:border-[#9B2915]"
               />
             </div>
 
-            {/* Color Theme (Solid Colors) */}
             <div className="sm:col-span-2 space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
-                Cor da Capa (Sólida)
+              <label className="block text-xs font-bold text-[#524F4A]">
+                Cor da Capa
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {SOLID_COLORS.map((col) => (
@@ -186,9 +180,9 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
                     type="button"
                     key={col.value}
                     onClick={() => setFormData({ ...formData, coverColor: col.value })}
-                    className={`h-10 rounded-xl ${col.value} text-white text-[11px] font-bold flex items-center justify-center border-2 transition-all ${
+                    className={`h-10 rounded-[10px] ${col.value} text-white text-xs font-bold flex items-center justify-center border-2 transition-all cursor-pointer ${
                       formData.coverColor === col.value
-                        ? 'border-white ring-2 ring-red-900 scale-102'
+                        ? 'border-[#EBE3D4] ring-2 ring-[#9B2915]'
                         : 'border-transparent opacity-80 hover:opacity-100'
                     }`}
                   >
@@ -198,9 +192,8 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
               </div>
             </div>
 
-            {/* Description / Synopsis */}
             <div className="sm:col-span-2 space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
+              <label className="block text-xs font-bold text-[#524F4A]">
                 Sinopse / Descrição
               </label>
               <textarea
@@ -208,23 +201,22 @@ function EditBookModalContent({ book, onClose }: { book: Book; onClose: () => vo
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
                 placeholder="Apresente brevemente o contexto da obra..."
-                className="w-full text-xs p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
+                className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] focus:outline-none focus:border-[#9B2915]"
               />
             </div>
-
           </div>
 
-          <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex justify-end gap-2">
+          <div className="pt-4 border-t border-[#D29F96] flex justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+              className="px-6 py-2 rounded-[10px] bg-[#C8C1B4] hover:bg-[#ACA69B] text-[#1A1917] text-sm font-semibold cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-red-900 hover:bg-red-800 text-white text-xs font-bold shadow flex items-center gap-1.5"
+              className="px-6 py-2 rounded-[10px] bg-[#D29F96] hover:bg-[#C98B81] text-black text-sm font-bold shadow-coletivo-btn flex items-center gap-1.5 cursor-pointer"
             >
               <Save className="w-4 h-4" />
               Salvar Alterações

@@ -1,270 +1,186 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useState, useMemo } from 'react';
 import { useLibrary } from '../../../../context/LibraryContext';
 import { LoanModal } from '../../../../components/LoanModal';
 import { Book } from '../../../../types/library';
-import {
-  History,
-  ArrowLeft,
-  Search,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  Shield,
-} from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
+
+function formatDateBr(dateStr?: string) {
+  if (!dateStr) return '—';
+  const parts = dateStr.slice(0, 10).split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return dateStr;
+}
 
 export default function AdminHistoricoPage() {
-  const { loans, books, returnBook, renewLoan } = useLibrary();
+  const { loans, books, returnBook } = useLibrary();
 
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'overdue' | 'returned'>('all');
   const [loanBook, setLoanBook] = useState<Book | null>(null);
 
-  const filteredLoans = loans.filter((loan) => {
-    // Search
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      const matchBook = loan.bookTitle.toLowerCase().includes(q) || loan.bookAuthor.toLowerCase().includes(q);
-      const matchUser = loan.userName.toLowerCase().includes(q) || loan.userEmail.toLowerCase().includes(q);
-      if (!matchBook && !matchUser) return false;
-    }
+  const filteredLoans = useMemo(() => {
+    if (!search.trim()) return loans;
+    const q = search.toLowerCase().trim();
+    return loans.filter(
+      (loan) =>
+        loan.bookTitle.toLowerCase().includes(q) ||
+        loan.bookAuthor.toLowerCase().includes(q) ||
+        loan.userName.toLowerCase().includes(q) ||
+        loan.userEmail.toLowerCase().includes(q)
+    );
+  }, [loans, search]);
 
-    const isReturned = loan.status === 'returned';
-    const isOverdue = loan.status === 'overdue' || (!isReturned && new Date(loan.dueDate) < new Date());
-
-    if (statusFilter === 'active' && (isReturned || isOverdue)) return false;
-    if (statusFilter === 'overdue' && !isOverdue) return false;
-    if (statusFilter === 'returned' && !isReturned) return false;
-
-    return true;
-  });
-
-  const activeCount = loans.filter((l) => l.status !== 'returned').length;
-  const overdueCount = loans.filter((l) => l.status !== 'returned' && new Date(l.dueDate) < new Date()).length;
-  const returnedCount = loans.filter((l) => l.status === 'returned').length;
+  const firstAvailableBook =
+    books.find((b) => b.availableCopies > 0) || books[0] || null;
 
   return (
-    <div className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8 bg-white dark:bg-black text-black dark:text-white">
-      
-      {/* Top Breadcrumb & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-500 hover:text-red-900 transition-colors mb-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Voltar ao Painel Geral
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-black text-black dark:text-white flex items-center gap-2">
-            <History className="w-7 h-7 text-red-900" />
-            Histórico & Controle de Empréstimos
-          </h1>
-          <p className="text-xs text-zinc-500">
-            Biblioteca Coletivo Negro Viegas D&apos;Abreu • Gestão de circulação e prazos
-          </p>
-        </div>
-
+    <div className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-12 space-y-6">
+      {/* Top-right Action Pill matching Figma "Tela do Admin - Empréstimos" */}
+      <div className="max-w-[1136px] mx-auto flex justify-end">
         <button
+          type="button"
           onClick={() => {
-            if (books.length > 0) setLoanBook(books[0]);
+            if (firstAvailableBook) setLoanBook(firstAvailableBook);
           }}
-          className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 shadow"
+          disabled={!firstAvailableBook}
+          className="px-7 py-2.5 rounded-[50px] bg-[#EBE3D4] border-[3px] border-[#D29F96] shadow-coletivo-card inline-flex items-center gap-3 text-[#9B2915] hover:bg-[#F4F0E8] transition-colors cursor-pointer disabled:opacity-50"
         >
-          <Shield className="w-4 h-4" />
-          + Registrar Novo Empréstimo
+          <Plus className="w-8 h-8 sm:w-10 sm:h-10 stroke-[3.5]" />
+          <span className="text-2xl sm:text-[40px] font-extrabold leading-none">
+            Empréstimos
+          </span>
         </button>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xs flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950 text-red-900">
-            <Clock className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="text-xl font-black text-black dark:text-white">
-              {activeCount}
-            </span>
-            <p className="text-xs text-zinc-500">Empréstimos em Aberto</p>
+      {/* Main Cream Panel */}
+      <div className="max-w-[1136px] mx-auto bg-[#EBE3D4] rounded-[32px] sm:rounded-[50px] p-5 sm:p-10 lg:px-[69px] lg:py-10 shadow-coletivo-card space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-3xl sm:text-[48px] font-extrabold text-[#524F4A] leading-tight">
+            Empréstimos
+          </h1>
+
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#524F4A]" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar empréstimo..."
+              className="w-full pl-9 pr-4 py-2 rounded-[10px] border border-[#ACA69B] bg-white text-sm text-[#1A1917] placeholder:text-[#AFAFAF] focus:outline-none focus:border-[#9B2915]"
+            />
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xs flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950 text-red-900">
-            <AlertTriangle className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="text-xl font-black text-red-900">
-              {overdueCount}
-            </span>
-            <p className="text-xs text-zinc-500">Devoluções Atrasadas</p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xs flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-black dark:text-white">
-            <CheckCircle className="w-5 h-5 text-red-900" />
-          </div>
-          <div>
-            <span className="text-xl font-black text-black dark:text-white">
-              {returnedCount}
-            </span>
-            <p className="text-xs text-zinc-500">Devoluções Concluídas</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Filter toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por livro, leitor ou e-mail..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:ring-2 focus:ring-red-600"
-          />
-        </div>
-
-        <div className="inline-flex rounded-xl bg-zinc-100 dark:bg-zinc-900 p-1 text-xs font-medium border border-zinc-200 dark:border-zinc-800">
-          <button
-            onClick={() => setStatusFilter('all')}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              statusFilter === 'all'
-                ? 'bg-black dark:bg-white text-white dark:text-black shadow-xs font-bold'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
-            }`}
-          >
-            Todos ({loans.length})
-          </button>
-          <button
-            onClick={() => setStatusFilter('active')}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              statusFilter === 'active'
-                ? 'bg-red-600 text-white shadow-xs font-bold'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
-            }`}
-          >
-            Em Aberto ({activeCount})
-          </button>
-          <button
-            onClick={() => setStatusFilter('overdue')}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              statusFilter === 'overdue'
-                ? 'bg-red-700 text-white shadow-xs font-bold'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
-            }`}
-          >
-            Atrasados ({overdueCount})
-          </button>
-          <button
-            onClick={() => setStatusFilter('returned')}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              statusFilter === 'returned'
-                ? 'bg-zinc-800 text-white shadow-xs font-bold'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
-            }`}
-          >
-            Devolvidos ({returnedCount})
-          </button>
-        </div>
-      </div>
-
-      {/* Loans Table */}
-      <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-zinc-700 dark:text-zinc-300">
-            <thead className="bg-zinc-50 dark:bg-zinc-900 text-black dark:text-white font-bold uppercase text-[11px] border-b border-zinc-200 dark:border-zinc-800">
-              <tr>
-                <th className="py-3.5 px-4">Livro</th>
-                <th className="py-3.5 px-4">Leitor / Membro</th>
-                <th className="py-3.5 px-4">Data Retirada</th>
-                <th className="py-3.5 px-4">Prazo Devolução</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4">Observações</th>
-                <th className="py-3.5 px-4 text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {filteredLoans.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-zinc-400">
-                    Nenhum registro de empréstimo corresponde ao filtro atual.
-                  </td>
+        {/* Striped Table matching Figma */}
+        <div className="rounded-[25px] border-2 border-[#3B3935] bg-[#ACA69B] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[700px]">
+              <thead>
+                <tr className="bg-[#ACA69B] text-black text-sm sm:text-base lg:text-[20px] font-bold">
+                  <th className="py-3.5 px-4 border-r-2 border-black w-[32%]">
+                    Nome
+                  </th>
+                  <th className="py-3.5 px-3 border-r-2 border-black text-center w-[15%]">
+                    Status
+                  </th>
+                  <th className="py-3.5 px-3 border-r-2 border-black text-center w-[17%]">
+                    Leitor
+                  </th>
+                  <th className="py-3.5 px-3 border-r-2 border-black text-center w-[20%]">
+                    Email
+                  </th>
+                  <th className="py-3.5 px-3 text-center w-[16%]">
+                    Data
+                  </th>
                 </tr>
-              ) : (
-                filteredLoans.map((loan) => {
-                  const isReturned = loan.status === 'returned';
-                  const isOverdue = loan.status === 'overdue' || (!isReturned && new Date(loan.dueDate) < new Date());
+              </thead>
+              <tbody>
+                {filteredLoans.length === 0 ? (
+                  <tr className="bg-[#F4F0E8]">
+                    <td
+                      colSpan={5}
+                      className="py-16 px-4 text-center text-base text-[#524F4A]"
+                    >
+                      Nenhum empréstimo encontrado.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredLoans.map((loan, index) => {
+                    const isReturned = loan.status === 'returned';
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const due = new Date(loan.dueDate);
+                    due.setHours(0, 0, 0, 0);
+                    const isOverdue =
+                      !isReturned && (loan.status === 'overdue' || due < today);
 
-                  return (
-                    <tr key={loan.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
-                      <td className="py-3.5 px-4">
-                        <strong className="text-black dark:text-white text-sm block">
-                          {loan.bookTitle}
-                        </strong>
-                        <span className="text-zinc-500">{loan.bookAuthor}</span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <div className="font-bold text-black dark:text-white">{loan.userName}</div>
-                        <div className="text-zinc-500 text-[11px]">{loan.userEmail}</div>
-                      </td>
-                      <td className="py-3.5 px-4 font-mono">{loan.borrowedDate}</td>
-                      <td className="py-3.5 px-4 font-mono">
-                        {isReturned ? (
-                          <span className="text-zinc-500">Devolvido ({loan.returnedDate})</span>
-                        ) : (
-                          <span className={isOverdue ? 'text-red-900 font-bold' : ''}>
-                            {loan.dueDate}
+                    const statusLabel = isReturned
+                      ? 'Devolvido'
+                      : isOverdue
+                      ? 'Em atraso'
+                      : 'Emprestado';
+
+                    const rowBg =
+                      index % 2 === 0 ? 'bg-[#F4F0E8]' : 'bg-[#ACA69B]';
+
+                    return (
+                      <tr
+                        key={loan.id}
+                        className={`${rowBg} text-black text-sm sm:text-base lg:text-[18px] font-medium`}
+                      >
+                        <td className="py-3 px-4 border-r-2 border-black">
+                          <span className="font-semibold block leading-snug">
+                            {loan.bookTitle}
                           </span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            isReturned
-                              ? 'bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300'
-                              : isOverdue
-                              ? 'bg-red-600 text-white'
-                              : 'bg-red-50 text-red-900 dark:bg-red-950 dark:text-red-400 border border-red-200 dark:border-red-900'
-                          }`}
-                        >
-                          {isReturned ? 'Devolvido' : isOverdue ? 'Atrasado' : 'Em Aberto'}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 max-w-xs truncate text-zinc-500">
-                        {loan.notes || '—'}
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        {!isReturned ? (
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              onClick={() => renewLoan(loan.id, 7)}
-                              className="px-2.5 py-1 rounded bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 text-black dark:text-white text-[11px] font-bold"
-                            >
-                              +7 Dias
-                            </button>
-                            <button
-                              onClick={() => returnBook(loan.id)}
-                              className="px-2.5 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold"
-                            >
-                              Devolver
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-zinc-400 text-[11px]">Concluído</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                          <span className="text-xs text-[#3B3935]">
+                            {loan.bookAuthor}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 border-r-2 border-black text-center">
+                          <span
+                            className={
+                              isOverdue ? 'text-[#9B2915] font-bold' : ''
+                            }
+                          >
+                            {statusLabel}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 border-r-2 border-black text-center">
+                          {loan.userName}
+                        </td>
+                        <td className="py-3 px-3 border-r-2 border-black text-center text-sm truncate max-w-[200px]">
+                          {loan.userEmail}
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          {isReturned ? (
+                            <span className="whitespace-nowrap">
+                              {formatDateBr(loan.returnedDate || loan.dueDate)}
+                            </span>
+                          ) : (
+                            <div className="flex flex-col items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => returnBook(loan.id)}
+                                className="px-3 py-1 rounded-md bg-[#9B2915] hover:bg-[#842312] text-[#EBE3D4] text-xs font-bold cursor-pointer"
+                              >
+                                Devolver
+                              </button>
+                              <span className="text-[11px] text-[#3B3935] whitespace-nowrap">
+                                Vence {formatDateBr(loan.dueDate)}
+                              </span>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -273,7 +189,6 @@ export default function AdminHistoricoPage() {
         isOpen={!!loanBook}
         onClose={() => setLoanBook(null)}
       />
-
     </div>
   );
 }

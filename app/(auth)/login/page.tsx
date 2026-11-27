@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
 import { useLibrary } from '../../../context/LibraryContext';
 import {
-  BookOpen,
   LogIn,
   UserCheck,
   Shield,
@@ -54,91 +53,83 @@ export default function LoginPage() {
     if (demoRole === 'admin') {
       addToast('Modo Admin', 'Conectado como Coordenação da Biblioteca.');
     } else {
-      addToast('Modo Leitor', 'Conectado como Leitor Comunitário (Membro Leitor).');
+      addToast('Modo Leitor', 'Conectado como Leitor Comunitário.');
     }
     router.push('/');
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-black text-black dark:text-white">
+    <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-6">
-        
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
-            <div className="w-12 h-12 rounded-2xl bg-red-900 flex items-center justify-center text-white shadow-lg shadow-red-950/30 group-hover:scale-105 transition-transform">
-              <BookOpen className="w-6 h-6 text-white" />
-            </div>
-          </Link>
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-black dark:text-white">
-            Acesso à Biblioteca
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
+        {/* Heading */}
+        <div className="text-center space-y-1">
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#C8C1B4]">
+            Login
+          </h1>
+          <p className="text-sm text-[#F2EDE3]/90">
             Coletivo Negro Viegas D&apos;Abreu • Gestão e Empréstimos
           </p>
         </div>
 
-        {/* 1-CLICK DEMO ACCESS CARDS */}
-        <div className="p-4 rounded-3xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-md space-y-3">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-red-900 uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-red-900" />
-            Acesso Rápido de Demonstração (1 Clique)
+        {/* 1-Click Demo Access */}
+        <div className="p-5 rounded-[30px] bg-[#EBE3D4] border-[3px] border-[#D29F96] shadow-coletivo-card space-y-3 text-[#1A1917]">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#9B2915] uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-[#9B2915]" />
+            Acesso Rápido de Demonstração
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
+              type="button"
               onClick={() => handleDemoLogin('reader')}
               disabled={loading}
-              className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-red-900 hover:shadow-md transition-all text-left group flex flex-col justify-between gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="p-3 rounded-[14px] bg-[#F4F0E8] border-2 border-[#D29F96] hover:bg-[#D29F96]/40 transition-all text-left flex flex-col justify-between gap-2 cursor-pointer disabled:opacity-60"
             >
               <div className="flex items-center justify-between">
-                <span className="p-2 rounded-xl bg-red-50 dark:bg-red-950 text-red-900">
+                <span className="p-1.5 rounded-lg bg-[#9B2915] text-[#EBE3D4]">
                   <UserCheck className="w-4 h-4" />
                 </span>
-                <span className="text-[10px] font-bold text-red-900 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-bold text-[#9B2915] bg-[#D29F96]/40 px-2 py-0.5 rounded">
                   Leitor
                 </span>
               </div>
               <div>
-                <p className="text-xs font-bold text-black dark:text-white group-hover:text-red-900 transition-colors">
-                  Leitor Comunitário
-                </p>
-                <p className="text-[11px] text-zinc-500">Membro Comum</p>
+                <p className="text-xs font-bold text-[#1A1917]">Leitor Comunitário</p>
+                <p className="text-[11px] text-[#524F4A]">Membro Comum</p>
               </div>
             </button>
 
             <button
+              type="button"
               onClick={() => handleDemoLogin('admin')}
               disabled={loading}
-              className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-red-900 hover:shadow-md transition-all text-left group flex flex-col justify-between gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="p-3 rounded-[14px] bg-[#F4F0E8] border-2 border-[#D29F96] hover:bg-[#D29F96]/40 transition-all text-left flex flex-col justify-between gap-2 cursor-pointer disabled:opacity-60"
             >
               <div className="flex items-center justify-between">
-                <span className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white">
+                <span className="p-1.5 rounded-lg bg-[#3B3935] text-[#EBE3D4]">
                   <Shield className="w-4 h-4" />
                 </span>
-                <span className="text-[10px] font-bold text-black dark:text-white bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-bold text-[#1A1917] bg-[#C8C1B4] px-2 py-0.5 rounded">
                   Admin
                 </span>
               </div>
               <div>
-                <p className="text-xs font-bold text-black dark:text-white group-hover:text-red-900 transition-colors">
-                  Coordenação da Biblioteca
-                </p>
-                <p className="text-[11px] text-zinc-500">Gestor do Coletivo</p>
+                <p className="text-xs font-bold text-[#1A1917]">Coordenação</p>
+                <p className="text-[11px] text-[#524F4A]">Gestor do Coletivo</p>
               </div>
             </button>
           </div>
         </div>
 
-        {/* Traditional Credentials Form */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-5">
-          <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
-            <span className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
+        {/* Credentials Form */}
+        <div className="p-6 sm:p-8 rounded-[30px] bg-[#EBE3D4] border-[3px] border-[#D29F96] shadow-coletivo-card space-y-5 text-[#1A1917]">
+          <div className="flex items-center justify-between border-b border-[#ACA69B] pb-3">
+            <span className="text-xs font-bold text-[#524F4A] uppercase tracking-wider">
               Entrar com E-mail
             </span>
             <Link
               href="/register"
-              className="text-xs font-bold text-red-900 hover:text-red-900"
+              className="text-xs font-bold text-[#9B2915] hover:underline"
             >
               Criar conta nova →
             </Link>
@@ -146,40 +137,40 @@ export default function LoginPage() {
 
           <form onSubmit={handleStandardLogin} className="space-y-4">
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
+              <label className="block text-xs font-bold text-[#524F4A]">
                 Endereço de E-mail
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#524F4A]" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ex: leitor@cnviegas.org ou seu@email.com"
+                  placeholder="seu@email.com"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-900"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-[10px] border border-[#ACA69B] bg-white text-sm text-[#1A1917] placeholder:text-[#AFAFAF] focus:outline-none focus:border-[#9B2915]"
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
+              <label className="block text-xs font-bold text-[#524F4A]">
                 Senha de Acesso
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#524F4A]" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-black dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-900"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-[10px] border border-[#ACA69B] bg-white text-sm text-[#1A1917] placeholder:text-[#AFAFAF] focus:outline-none focus:border-[#9B2915]"
                 />
               </div>
             </div>
 
             {error && (
-              <p className="text-sm text-red-900 dark:text-red-900" role="alert">
+              <p className="text-sm font-semibold text-[#9B2915]" role="alert">
                 {error}
               </p>
             )}
@@ -187,25 +178,23 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-red-900 hover:bg-red-800 text-white text-sm font-bold shadow-md shadow-red-950/20 transition-all flex items-center justify-center gap-2 hover:scale-101"
+              className="w-full py-3 rounded-[10px] bg-[#D29F96] hover:bg-[#C98B81] active:bg-[#BE7467] text-black text-base sm:text-lg font-medium shadow-coletivo-btn transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
             >
               <LogIn className="w-4 h-4" />
               {loading ? 'Entrando...' : 'Entrar no Sistema'}
             </button>
           </form>
 
-          {/* Visitor link */}
-          <div className="pt-2 text-center border-t border-zinc-100 dark:border-zinc-800">
+          <div className="pt-2 text-center border-t border-[#ACA69B]">
             <Link
               href="/"
-              className="text-xs text-zinc-500 hover:text-red-900 inline-flex items-center gap-1 font-semibold"
+              className="text-xs text-[#524F4A] hover:text-[#9B2915] inline-flex items-center gap-1 font-semibold"
             >
               <Eye className="w-3.5 h-3.5" />
               Apenas consultar o acervo sem autenticação
             </Link>
           </div>
         </div>
-
       </div>
     </div>
   );
