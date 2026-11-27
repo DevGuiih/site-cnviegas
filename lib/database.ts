@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { Book, Loan, User, BookCategory, BookStatus } from '../types/library';
+import { Book, Loan, User, BookStatus } from '../types/library';
 import { profileToUser, ProfileRow } from './profile';
 
 
@@ -83,6 +83,8 @@ export function mapDbBookToBook(row: DbBookRow, fallback?: Partial<Book>): Book 
     publisher: row.publisher || fallback?.publisher || undefined,
     pages: row.pages || fallback?.pages || undefined,
     coverColor: row.cover_color || row.coverColor || fallback?.coverColor || 'bg-red-600',
+    description: row.description || row.notes || fallback?.description || undefined,
+    location: row.location || fallback?.location || undefined,
     totalCopies,
     availableCopies,
     status,
@@ -234,7 +236,7 @@ export async function insertBookToSupabase(
       title: bookData.title,
       author: bookData.author,
       available: bookData.availableCopies > 0,
-      notes: bookData.description,
+      notes: bookData.description || null,
     };
 
     const { data, error } = await supabase

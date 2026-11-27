@@ -26,6 +26,8 @@ export interface Book {
   publisher?: string;
   pages?: number;
   coverColor?: string; // Gradient or background color style
+  description?: string;
+  location?: string;
   totalCopies: number;
   availableCopies: number;
   status: BookStatus;
@@ -41,7 +43,6 @@ export interface Loan {
   bookId: string;
   bookTitle: string;
   bookAuthor: string;
-  bookCategory?: BookCategory;
   bookCoverColor?: string;
   userId: string;
   userName: string;

@@ -4,19 +4,13 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLibrary } from '../../../../context/LibraryContext';
-import {
-  PlusCircle,
-  ArrowLeft,
-  Save,
-  CheckCircle2,
-} from 'lucide-react';
-
+import { ArrowLeft, Save } from 'lucide-react';
 
 const SOLID_COLORS = [
-  { label: 'Vermelho Sólido', value: 'bg-red-600' },
-  { label: 'Preto Sólido', value: 'bg-black' },
-  { label: 'Cinza Grafite', value: 'bg-zinc-900' },
-  { label: 'Vermelho Escuro', value: 'bg-red-950' },
+  { label: 'Vermelho Coletivo', value: 'bg-red-900', preview: 'bg-[#9B2915]' },
+  { label: 'Preto Sólido', value: 'bg-black', preview: 'bg-[#1A1917]' },
+  { label: 'Cinza Escuro', value: 'bg-zinc-900', preview: 'bg-[#3B3935]' },
+  { label: 'Vermelho Escuro', value: 'bg-red-950', preview: 'bg-[#360E07]' },
 ];
 
 export default function AdminAddBookPage() {
@@ -28,9 +22,9 @@ export default function AdminAddBookPage() {
   const [publisher, setPublisher] = useState('');
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [isbn, setIsbn] = useState('');
-  const [copies, setCopies] = useState(2);
+  const [copies, setCopies] = useState(1);
   const [description, setDescription] = useState('');
-  const [coverColor, setCoverColor] = useState('bg-red-600');
+  const [coverColor, setCoverColor] = useState('bg-red-900');
   const [tagsInput, setTagsInput] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,238 +44,232 @@ export default function AdminAddBookPage() {
       isbn: isbn.trim(),
       totalCopies: copies,
       availableCopies: copies,
+      description: description.trim() || 'Obra catalogada no acervo comunitário.',
       coverColor,
       status: 'available',
+      tags: tags.length > 0 ? tags : ["Acervo Viegas D'Abreu"],
       featured: false,
     });
 
     router.push('/admin');
   };
 
-  return (
-    <div className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-8 bg-white dark:bg-black text-black dark:text-white">
-      
-      {/* Top Breadcrumb & Navigation */}
-      <div className="flex items-center justify-between">
-        <Link
-          href="/admin"
-          className="inline-flex items-center gap-2 text-xs font-bold text-zinc-500 hover:text-red-900 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Voltar ao Painel Admin
-        </Link>
-        <span className="text-xs text-red-900 font-bold">
-          Módulo de Catalogação
-        </span>
-      </div>
+  const previewBg =
+    SOLID_COLORS.find((c) => c.value === coverColor)?.preview || 'bg-[#9B2915]';
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Main Form */}
-        <div className="lg:col-span-2 p-6 sm:p-8 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-6">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-black text-black dark:text-white flex items-center gap-2">
-              <PlusCircle className="w-6 h-6 text-red-900" />
-              Adicionar Novo Livro ao Acervo
+  return (
+    <div className="flex-1 w-full max-w-[1136px] mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-6">
+      <Link
+        href="/admin"
+        className="inline-flex items-center gap-2 text-sm font-bold text-[#F2EDE3] hover:text-[#D29F96] transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Voltar para Livros
+      </Link>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="lg:col-span-2 bg-[#EBE3D4] border-[3px] border-[#D29F96] rounded-[30px] shadow-coletivo-card p-6 sm:p-8 space-y-6 text-[#1A1917]">
+          <div className="border-b border-[#ACA69B] pb-4">
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-[#524F4A]">
+              Cadastrar Novo Livro
             </h1>
-            <p className="text-xs text-zinc-500">
-              Insira os dados do exemplar doado ou adquirido para a biblioteca comunitária.
+            <p className="text-sm text-[#524F4A] mt-1">
+              Insira os dados da obra para catalogação no acervo comunitário.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-4">
-              
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-black dark:text-white">
-                  Título da Obra *
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ex: Vidas Secas"
-                  required
-                  className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white focus:ring-2 focus:ring-red-600"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-black dark:text-white">
-                    Autor(a) / Escritor(a) *
-                  </label>
-                  <input
-                    type="text"
-                    value={author}
-                    onChange={(e) => setAuthor(e.target.value)}
-                    placeholder="Ex: Graciliano Ramos"
-                    required
-                    className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                  />
-                </div>
-
-                
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-black dark:text-white">
-                    Editora
-                  </label>
-                  <input
-                    type="text"
-                    value={publisher}
-                    onChange={(e) => setPublisher(e.target.value)}
-                    placeholder="Ex: Record"
-                    className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-black dark:text-white">
-                    Ano
-                  </label>
-                  <input
-                    type="number"
-                    value={year}
-                    onChange={(e) => setYear(parseInt(e.target.value) || 2024)}
-                    className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-black dark:text-white">
-                    Exemplares
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={copies}
-                    onChange={(e) => setCopies(parseInt(e.target.value) || 1)}
-                    className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-xs font-bold text-black dark:text-white">
-                    ISBN
-                  </label>
-                  <input
-                    type="text"
-                    value={isbn}
-                    onChange={(e) => setIsbn(e.target.value)}
-                    placeholder="978-85..."
-                    className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Tags */}
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-black dark:text-white">
-                  Palavras-chave / Tags (separadas por vírgula)
-                </label>
-                <input
-                  type="text"
-                  value={tagsInput}
-                  onChange={(e) => setTagsInput(e.target.value)}
-                  placeholder="Ex: Sertão, Romance, Clássico Brasileiro"
-                  className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                />
-              </div>
-
-              {/* Solid Color Selector */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-black dark:text-white">
-                  Cor da Capa (Sólida)
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {SOLID_COLORS.map((col) => (
-                    <button
-                      type="button"
-                      key={col.value}
-                      onClick={() => setCoverColor(col.value)}
-                      className={`h-9 rounded-xl ${col.value} text-white text-[11px] font-bold flex items-center justify-center border-2 transition-all ${
-                        coverColor === col.value
-                          ? 'border-white ring-2 ring-red-600 scale-102'
-                          : 'border-transparent opacity-80 hover:opacity-100'
-                      }`}
-                    >
-                      {col.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-black dark:text-white">
-                  Sinopse / Descrição da Obra
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Apresente brevemente o contexto da obra..."
-                  rows={3}
-                  className="w-full text-xs p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white"
-                />
-              </div>
-
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-[#524F4A]">
+                Título da Obra *
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ex: Pele Negra, Máscaras Brancas"
+                required
+                className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] placeholder:text-[#AFAFAF] focus:outline-none focus:border-[#9B2915]"
+              />
             </div>
 
-            <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex justify-end gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-[#524F4A]">
+                  Autor(a) / Organizador(a) *
+                </label>
+                <input
+                  type="text"
+                  value={author}
+                  onChange={(e) => setAuthor(e.target.value)}
+                  placeholder="Ex: Frantz Fanon"
+                  required
+                  className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] placeholder:text-[#AFAFAF] focus:outline-none focus:border-[#9B2915]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-[#524F4A]">
+                  Editora
+                </label>
+                <input
+                  type="text"
+                  value={publisher}
+                  onChange={(e) => setPublisher(e.target.value)}
+                  placeholder="Ex: Ubu Editora"
+                  className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] placeholder:text-[#AFAFAF] focus:outline-none focus:border-[#9B2915]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-[#524F4A]">
+                  Ano
+                </label>
+                <input
+                  type="number"
+                  value={year}
+                  onChange={(e) => setYear(parseInt(e.target.value) || 2024)}
+                  className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] focus:outline-none focus:border-[#9B2915]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-[#524F4A]">
+                  Exemplares
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={copies}
+                  onChange={(e) => setCopies(parseInt(e.target.value) || 1)}
+                  className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] focus:outline-none focus:border-[#9B2915]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-[#524F4A]">
+                  ISBN
+                </label>
+                <input
+                  type="text"
+                  value={isbn}
+                  onChange={(e) => setIsbn(e.target.value)}
+                  placeholder="978-85..."
+                  className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] placeholder:text-[#AFAFAF] focus:outline-none focus:border-[#9B2915]"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-[#524F4A]">
+                Palavras-chave / Tags (separadas por vírgula)
+              </label>
+              <input
+                type="text"
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+                placeholder="Ex: Pensamento Negro, Filosofia, Ensaio"
+                className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] placeholder:text-[#AFAFAF] focus:outline-none focus:border-[#9B2915]"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#524F4A]">
+                Cor da Capa
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {SOLID_COLORS.map((col) => (
+                  <button
+                    type="button"
+                    key={col.value}
+                    onClick={() => setCoverColor(col.value)}
+                    className={`h-10 rounded-[10px] ${col.preview} text-white text-xs font-bold flex items-center justify-center border-2 transition-all cursor-pointer ${
+                      coverColor === col.value
+                        ? 'border-[#EBE3D4] ring-2 ring-[#9B2915]'
+                        : 'border-transparent opacity-80 hover:opacity-100'
+                    }`}
+                  >
+                    {col.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-[#524F4A]">
+                Sinopse / Descrição
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Apresente brevemente o contexto da obra..."
+                rows={3}
+                className="w-full text-sm p-3 rounded-[10px] border border-[#ACA69B] bg-white text-[#1A1917] placeholder:text-[#AFAFAF] focus:outline-none focus:border-[#9B2915]"
+              />
+            </div>
+
+            <div className="pt-4 border-t border-[#ACA69B] flex justify-end gap-3">
               <Link
                 href="/admin"
-                className="px-4 py-2.5 text-xs font-medium text-zinc-600 hover:text-black dark:hover:text-white"
+                className="px-5 py-2.5 rounded-[10px] bg-[#C8C1B4] hover:bg-[#ACA69B] text-[#1A1917] text-sm font-semibold"
               >
                 Cancelar
               </Link>
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow flex items-center gap-1.5"
+                className="px-6 py-2.5 rounded-[10px] bg-[#D29F96] hover:bg-[#C98B81] text-black text-sm font-bold shadow-coletivo-btn flex items-center gap-1.5 cursor-pointer"
               >
                 <Save className="w-4 h-4" />
-                Catalogar Obra no Sistema
+                Catalogar Livro
               </button>
             </div>
           </form>
         </div>
 
-        {/* Live Preview Card */}
+        {/* Live Preview */}
         <div className="space-y-3">
-          <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
-            Pré-visualização do Card
+          <span className="text-xs font-bold text-[#C8C1B4] uppercase tracking-wider block">
+            Pré-visualização
           </span>
-
-          <div className="rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-lg overflow-hidden flex flex-col">
-            <div className={`h-44 ${coverColor} p-5 flex flex-col justify-between text-white relative`}>
-              <div>
-                <p className="text-[11px] font-bold text-white/80 uppercase tracking-widest truncate">
+          <div className="w-[168px]">
+            <div
+              className={`relative w-full aspect-[168/208] rounded-r-[5px] overflow-hidden shadow-md flex flex-col justify-between p-4 text-[#F2EDE3] ${previewBg}`}
+            >
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    'linear-gradient(270deg, rgba(217, 217, 217, 0) 80%, rgba(0, 0, 0, 0.42) 100%)',
+                }}
+              />
+              <div className="relative z-10 my-auto pl-1.5 space-y-1">
+                <p className="text-[11px] font-bold uppercase tracking-wider opacity-75 line-clamp-1">
                   {author || 'Nome do Autor'}
                 </p>
-                <h3 className="text-lg font-black text-white leading-tight line-clamp-2 mt-0.5">
+                <p className="text-base font-extrabold leading-snug line-clamp-4">
                   {title || 'Título do Livro'}
-                </h3>
+                </p>
               </div>
-            </div>
-
-            <div className="p-4 space-y-2 text-xs">
-              <span className="inline-flex items-center gap-1 text-red-900 font-bold">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {copies} {copies === 1 ? 'exemplar disponível' : 'exemplares disponíveis'}
+              <span className="relative z-10 pl-1.5 text-[10px] opacity-70">
+                {year}
               </span>
-              <p className="text-zinc-700 dark:text-zinc-300 line-clamp-2">
-                {description || 'A sinopse do livro aparecerá aqui...'}
+            </div>
+            <div className="pt-1.5 space-y-0.5">
+              <p className="text-[18px] leading-[22px] text-[#F2EDE3] truncate">
+                {title || 'Titulo do Livro'}
               </p>
+              <p className="text-[14px] leading-[17px] text-[#F2EDE3]/90 truncate">
+                {author || 'Autor Fulano de tal'}
+              </p>
+              <span className="mt-1.5 inline-block px-2.5 py-0.5 rounded-[5px] bg-[#D9D9D9] text-black text-[12px]">
+                Disponível
+              </span>
             </div>
           </div>
         </div>
-
       </div>
-
     </div>
   );
 }

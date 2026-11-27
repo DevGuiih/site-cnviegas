@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Book } from '../types/library';
 import { useAuth } from '../context/AuthContext';
 import { useLibrary } from '../context/LibraryContext';
-import { X, BookOpen, AlertTriangle, UserCheck } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface LoanModalProps {
   book: Book | null;
@@ -16,171 +16,143 @@ export function LoanModal({ book, isOpen, onClose }: LoanModalProps) {
   const { currentUser, role } = useAuth();
   const { users, borrowBook } = useLibrary();
 
+  const readerUsers = useMemo(
+    () => users.filter((u) => u.role === 'reader'),
+    [users]
+  );
+
   const [selectedUserId, setSelectedUserId] = useState<string>(
-    role === 'reader' && currentUser ? currentUser.id : users[1]?.id || ''
+    role === 'reader' && currentUser
+      ? currentUser.id
+      : readerUsers[0]?.id || ''
   );
   const [loanDays, setLoanDays] = useState<number>(14);
-  const [notes, setNotes] = useState<string>('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const formattedDueDate = useMemo(() => {
+    const due = new Date();
+    due.setDate(due.getDate() + loanDays);
+    return due.toLocaleDateString('pt-BR');
+  }, [loanDays]);
 
   if (!isOpen || !book) return null;
 
   const isAvailable = book.availableCopies > 0;
+  const effectiveUserId =
+    role === 'reader' && currentUser
+      ? currentUser.id
+      : selectedUserId || readerUsers[0]?.id || currentUser?.id || '';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAvailable) return;
+    if (!isAvailable || !effectiveUserId || submitting) return;
 
-    const targetUserId = role === 'reader' && currentUser ? currentUser.id : selectedUserId;
-    const res = await borrowBook(book.id, targetUserId, loanDays, notes);
+    setSubmitting(true);
+    const res = await borrowBook(book.id, effectiveUserId, loanDays);
+    setSubmitting(false);
     if (res.success) {
       onClose();
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs"
+      onClick={onClose}
+    >
       <div
-        className="relative w-full max-w-lg bg-white dark:bg-black rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        className="relative w-full max-w-[782px] bg-[#EBE3D4] border-[3px] border-[#D29F96] rounded-[10px] shadow-coletivo-card p-6 sm:p-7"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950 text-red-900">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-lg font-black text-black dark:text-white">
-                {role === 'admin' ? 'Registrar Novo Empréstimo' : 'Solicitar Empréstimo de Livro'}
-              </h3>
-              <p className="text-xs text-zinc-500">Biblioteca Coletivo Negro Viegas D&apos;Abreu</p>
-            </div>
-          </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Fechar"
+          className="absolute top-3.5 right-3.5 p-1.5 text-[#1A1917] hover:text-[#9B2915] transition-colors cursor-pointer"
+        >
+          <X className="w-8 h-8 stroke-[2.2]" />
+        </button>
 
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full text-zinc-400 hover:text-black dark:hover:text-white"
-            aria-label="Fechar"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <h3 className="text-xl sm:text-[28px] font-normal text-black leading-snug pr-10">
+            Tem certeza que deseja emprestar o livro:
+          </h3>
 
-        {/* Content Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          
-          {/* Selected Book Summary */}
-          <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 space-y-1">
-            <span className="text-[10px] font-bold text-red-900 uppercase tracking-wider">
-              Livro Selecionado
-            </span>
-            <h4 className="text-base font-black text-black dark:text-white">{book.title}</h4>
-            <p className="text-xs text-zinc-500">{book.author} • {book.category}</p>
-            <p className="text-xs text-zinc-400 pt-1">
-              Disponibilidade atual: <strong>{book.availableCopies}</strong> de {book.totalCopies} cópias
+          <div className="pl-4 sm:pl-6 space-y-0.5">
+            <p className="text-2xl sm:text-[32px] font-medium text-[#9B2915] leading-tight">
+              {book.title}
+            </p>
+            <p className="text-lg sm:text-2xl font-normal text-[#842312]">
+              {book.author}
             </p>
           </div>
 
-          {!isAvailable && (
-            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-900 dark:text-red-400 text-xs flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span>Atenção: Todos os exemplares deste livro já estão emprestados no momento.</span>
-            </div>
-          )}
+          <p className="text-xl sm:text-[28px] font-normal text-black leading-snug">
+            Você deverá <strong className="font-bold">devolver</strong> ou{' '}
+            <strong className="font-bold">renovar</strong> dia{' '}
+            <strong className="font-bold">{formattedDueDate}</strong>
+          </p>
 
-          {/* Reader selection (if admin) */}
-          {role === 'admin' ? (
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-black dark:text-white">
-                Membro / Leitor Destinatário:
-              </label>
-              <select
-                value={selectedUserId}
-                onChange={(e) => setSelectedUserId(e.target.value)}
-                className="w-full text-sm p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-900"
-                required
-              >
-                {users
-                  .filter((u) => u.role === 'reader')
-                  .map((user) => (
+          {/* Admin reader selection & period options */}
+          {role === 'admin' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-[#524F4A] uppercase tracking-wider">
+                  Leitor Destinatário
+                </label>
+                <select
+                  value={effectiveUserId}
+                  onChange={(e) => setSelectedUserId(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded-[10px] border-2 border-[#D29F96] bg-[#F4F0E8] text-sm text-[#1A1917] focus:outline-none focus:border-[#9B2915]"
+                >
+                  {readerUsers.map((user) => (
                     <option key={user.id} value={user.id}>
                       {user.name} ({user.email})
                     </option>
                   ))}
-              </select>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              <label className="block text-xs font-bold text-black dark:text-white">
-                Leitor Requisitante:
-              </label>
-              <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-xs text-black dark:text-white flex items-center gap-2 font-semibold">
-                <UserCheck className="w-4 h-4 text-red-900" />
-                {currentUser?.name} ({currentUser?.email})
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-[#524F4A] uppercase tracking-wider">
+                  Prazo do Empréstimo
+                </label>
+                <select
+                  value={loanDays}
+                  onChange={(e) => setLoanDays(Number(e.target.value))}
+                  className="w-full px-3 py-2 rounded-[10px] border-2 border-[#D29F96] bg-[#F4F0E8] text-sm text-[#1A1917] focus:outline-none focus:border-[#9B2915]"
+                >
+                  <option value={7}>7 dias</option>
+                  <option value={14}>14 dias (padrão)</option>
+                  <option value={30}>30 dias</option>
+                </select>
               </div>
             </div>
           )}
 
-          {/* Loan Duration */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-black dark:text-white">
-              Prazo Inicial de Empréstimo:
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { label: '7 Dias', val: 7 },
-                { label: '14 Dias (Padrão)', val: 14 },
-                { label: '30 Dias', val: 30 },
-              ].map((opt) => (
-                <button
-                  type="button"
-                  key={opt.val}
-                  onClick={() => setLoanDays(opt.val)}
-                  className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all text-center ${
-                    loanDays === opt.val
-                      ? 'bg-red-900 border-red-900 text-white shadow-sm'
-                      : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-red-900'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          {!isAvailable && (
+            <p className="text-sm font-semibold text-[#9B2915]">
+              Todos os exemplares deste livro estão emprestados no momento.
+            </p>
+          )}
 
-          {/* Notes */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-black dark:text-white">
-              Observações / Finalidade (Opcional):
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Ex: Leitura para oficina do coletivo, grupo de estudos, etc."
-              rows={2}
-              className="w-full text-xs p-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-900"
-            />
-          </div>
-
-          {/* Actions */}
-          <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-end gap-2">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-2">
+            <button
+              type="submit"
+              disabled={!isAvailable || submitting || !effectiveUserId}
+              className="px-10 sm:px-14 py-2.5 rounded-[10px] bg-[#D29F96] hover:bg-[#C98B81] active:bg-[#BE7467] text-black text-xl sm:text-2xl font-normal shadow-coletivo-btn transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submitting ? 'Emprestando...' : 'Emprestar'}
+            </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+              className="px-10 sm:px-14 py-2.5 rounded-[10px] bg-[#D29F96] hover:bg-[#C98B81] active:bg-[#BE7467] text-black text-xl sm:text-2xl font-normal shadow-coletivo-btn transition-colors cursor-pointer"
             >
               Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={!isAvailable}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold shadow transition-all ${
-                isAvailable
-                  ? 'bg-red-900 hover:bg-red-800 text-white'
-                  : 'bg-zinc-300 dark:bg-zinc-800 text-zinc-500 cursor-not-allowed'
-              }`}
-            >
-              Confirmar Empréstimo
             </button>
           </div>
         </form>

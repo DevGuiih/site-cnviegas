@@ -10,37 +10,37 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0">
       {toasts.map((toast) => {
         const icons = {
-          success: <CheckCircle2 className="w-5 h-5 text-red-900 shrink-0" />,
-          error: <AlertCircle className="w-5 h-5 text-red-900 shrink-0" />,
-          info: <Info className="w-5 h-5 text-zinc-300 shrink-0" />,
-          warning: <AlertTriangle className="w-5 h-5 text-red-900 shrink-0" />,
+          success: <CheckCircle2 className="w-5 h-5 text-[#9B2915] shrink-0" />,
+          error: <AlertCircle className="w-5 h-5 text-[#9B2915] shrink-0" />,
+          info: <Info className="w-5 h-5 text-[#524F4A] shrink-0" />,
+          warning: <AlertTriangle className="w-5 h-5 text-[#9B2915] shrink-0" />,
         };
 
         const borderStyles = {
-          success: 'border-red-900 bg-black text-white',
-          error: 'border-red-900 bg-red-950 text-white',
-          info: 'border-zinc-700 bg-black text-white',
-          warning: 'border-red-900 bg-black text-white',
+          success: 'border-[#D29F96] bg-[#EBE3D4] text-[#1A1917]',
+          error: 'border-[#9B2915] bg-[#EBE3D4] text-[#1A1917]',
+          info: 'border-[#C8C1B4] bg-[#EBE3D4] text-[#1A1917]',
+          warning: 'border-[#9B2915] bg-[#EBE3D4] text-[#1A1917]',
         };
 
         return (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-start gap-3 p-4 rounded-2xl border shadow-2xl transition-all animate-in fade-in slide-in-from-bottom-5 duration-300 ${
+            className={`pointer-events-auto flex items-start gap-3 p-4 rounded-2xl border-2 shadow-coletivo-card transition-all ${
               borderStyles[toast.type || 'success']
             }`}
           >
             {icons[toast.type || 'success']}
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-bold text-white leading-snug">{toast.title}</h4>
-              <p className="text-xs text-zinc-300 mt-0.5 leading-relaxed">{toast.message}</p>
+              <h4 className="text-sm font-bold text-[#1A1917] leading-snug">{toast.title}</h4>
+              <p className="text-xs text-[#524F4A] mt-0.5 leading-relaxed">{toast.message}</p>
             </div>
             <button
               onClick={() => removeToast(toast.id)}
-              className="text-zinc-400 hover:text-white transition-colors p-1 rounded-lg"
+              className="text-[#524F4A] hover:text-[#1A1917] transition-colors p-1 rounded-lg cursor-pointer"
               aria-label="Fechar"
             >
               <X className="w-4 h-4" />
