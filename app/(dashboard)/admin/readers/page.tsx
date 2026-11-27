@@ -1,152 +1,161 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useLibrary } from '../../../../context/LibraryContext';
-import {
-  Users,
-  ArrowLeft,
-  Search,
-  UserPlus,
-  Mail,
-  Phone,
-  Calendar,
-  BookOpen,
-  CheckCircle,
-} from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
+
+function formatDateBr(dateStr?: string) {
+  if (!dateStr) return '—';
+  const parts = dateStr.slice(0, 10).split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return dateStr;
+}
 
 export default function AdminReadersPage() {
   const { users, loans } = useLibrary();
   const [search, setSearch] = useState('');
 
-  const filteredUsers = users.filter((u) => {
-    if (!search.trim()) return true;
-    const q = search.toLowerCase();
-    return (
-      u.name.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
-      (u.phone && u.phone.includes(q))
+  const filteredUsers = useMemo(() => {
+    if (!search.trim()) return users;
+    const q = search.toLowerCase().trim();
+    return users.filter(
+      (u) =>
+        u.name.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        (u.phone && u.phone.includes(q))
     );
-  });
+  }, [users, search]);
+
+  const getReaderStatus = (userId: string) => {
+    const activeLoans = loans.filter(
+      (l) => l.userId === userId && l.status !== 'returned'
+    );
+    const hasOverdue = activeLoans.some((l) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const due = new Date(l.dueDate);
+      due.setHours(0, 0, 0, 0);
+      return l.status === 'overdue' || due < today;
+    });
+
+    if (hasOverdue) return 'Em atraso';
+    if (activeLoans.length > 0) return 'Emprestado';
+    return 'Regular';
+  };
 
   return (
-    <div className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8 bg-white dark:bg-black text-black dark:text-white">
-      
-      {/* Top Breadcrumb & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-500 hover:text-red-900 transition-colors mb-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Voltar ao Painel Geral
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-black text-black dark:text-white flex items-center gap-2">
-            <Users className="w-7 h-7 text-red-900" />
-            Leitores & Membros Cadastrados
-          </h1>
-          <p className="text-xs text-zinc-500">
-            Biblioteca Coletivo Negro Viegas D&apos;Abreu • Controle de associados e histórico de leituras
-          </p>
-        </div>
-
+    <div className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-12 space-y-6">
+      {/* Top-right Action Pill matching Figma "Tela do Admin - Leitores" */}
+      <div className="max-w-[1136px] mx-auto flex justify-end">
         <Link
-          href="/register"
-          className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 shadow self-start sm:self-auto"
+          href="/admin/invite"
+          className="px-7 py-2.5 rounded-[50px] bg-[#EBE3D4] border-[3px] border-[#D29F96] shadow-coletivo-card inline-flex items-center gap-3 text-[#9B2915] hover:bg-[#F4F0E8] transition-colors"
         >
-          <UserPlus className="w-4 h-4" />
-          + Cadastrar Novo Leitor
+          <Plus className="w-8 h-8 sm:w-10 sm:h-10 stroke-[3.5]" />
+          <span className="text-2xl sm:text-[40px] font-extrabold leading-none">
+            Leitores
+          </span>
         </Link>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar leitor por nome ou e-mail..."
-          className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:ring-2 focus:ring-red-600"
-        />
-      </div>
+      {/* Main Cream Panel */}
+      <div className="max-w-[1136px] mx-auto bg-[#EBE3D4] rounded-[32px] sm:rounded-[50px] p-5 sm:p-10 lg:px-[69px] lg:py-10 shadow-coletivo-card space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-3xl sm:text-[48px] font-extrabold text-[#524F4A] leading-tight">
+            Leitores
+          </h1>
 
-      {/* Members Grid Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredUsers.map((user) => {
-          const userActiveLoans = loans.filter(
-            (l) => l.userId === user.id && l.status !== 'returned'
-          );
-          const userPastLoans = loans.filter(
-            (l) => l.userId === user.id && l.status === 'returned'
-          );
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#524F4A]" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar leitor..."
+              className="w-full pl-9 pr-4 py-2 rounded-[10px] border border-[#ACA69B] bg-white text-sm text-[#1A1917] placeholder:text-[#AFAFAF] focus:outline-none focus:border-[#9B2915]"
+            />
+          </div>
+        </div>
 
-          return (
-            <div
-              key={user.id}
-              className="p-6 rounded-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-md flex flex-col justify-between gap-5 relative overflow-hidden"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-3xl shadow-xs">
-                    {user.avatar || '👤'}
-                  </div>
-                  <div>
-                    <h3 className="text-base font-black text-black dark:text-white">
-                      {user.name}
-                    </h3>
-                    <p className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5">
-                      <Mail className="w-3 h-3 text-red-900" />
-                      {user.email}
-                    </p>
-                  </div>
-                </div>
+        {/* Striped Table matching Figma */}
+        <div className="rounded-[25px] border-2 border-[#3B3935] bg-[#ACA69B] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[680px]">
+              <thead>
+                <tr className="bg-[#ACA69B] text-black text-sm sm:text-base lg:text-[20px] font-bold">
+                  <th className="py-3.5 px-4 border-r-2 border-black w-[34%]">
+                    Nome
+                  </th>
+                  <th className="py-3.5 px-3 border-r-2 border-black text-center w-[17%]">
+                    Status atual
+                  </th>
+                  <th className="py-3.5 px-4 border-r-2 border-black w-[29%]">
+                    Email
+                  </th>
+                  <th className="py-3.5 px-3 text-center w-[20%]">
+                    Registrado desde:
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.length === 0 ? (
+                  <tr className="bg-[#F4F0E8]">
+                    <td
+                      colSpan={4}
+                      className="py-16 px-4 text-center text-base text-[#524F4A]"
+                    >
+                      Nenhum leitor encontrado.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((user, index) => {
+                    const statusLabel = getReaderStatus(user.id);
+                    const rowBg =
+                      index % 2 === 0 ? 'bg-[#F4F0E8]' : 'bg-[#ACA69B]';
 
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                    user.role === 'admin'
-                      ? 'bg-red-600 text-white'
-                      : 'bg-zinc-100 text-black dark:bg-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-800'
-                  }`}
-                >
-                  {user.role === 'admin' ? 'Admin' : 'Leitor'}
-                </span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-2 text-xs">
-                {user.phone && (
-                  <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
-                    <Phone className="w-3.5 h-3.5 text-zinc-400" />
-                    <span>{user.phone}</span>
-                  </div>
+                    return (
+                      <tr
+                        key={user.id}
+                        className={`${rowBg} text-black text-sm sm:text-base lg:text-[18px] font-medium`}
+                      >
+                        <td className="py-3 px-4 border-r-2 border-black">
+                          <span className="font-semibold block leading-snug">
+                            {user.name}
+                          </span>
+                          <span className="text-xs text-[#3B3935]">
+                            {user.role === 'admin' ? 'Admin' : 'Leitor'}
+                            {user.phone ? ` • ${user.phone}` : ''}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 border-r-2 border-black text-center">
+                          <span
+                            className={
+                              statusLabel === 'Em atraso'
+                                ? 'text-[#9B2915] font-bold'
+                                : ''
+                            }
+                          >
+                            {statusLabel}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 border-r-2 border-black truncate max-w-[240px]">
+                          {user.email}
+                        </td>
+                        <td className="py-3 px-3 text-center whitespace-nowrap">
+                          {formatDateBr(user.joinedAt)}
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
-                <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
-                  <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-                  <span>Cadastrado em {user.joinedAt}</span>
-                </div>
-                <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
-                  <BookOpen className="w-3.5 h-3.5 text-red-600" />
-                  <span>
-                    Livros em posse: <strong>{userActiveLoans.length}</strong> (Limite: {user.maxLoansAllowed || 3})
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
-                  <CheckCircle className="w-3.5 h-3.5 text-zinc-500" />
-                  <span>Total já lidos: <strong>{userPastLoans.length}</strong> livros</span>
-                </div>
-              </div>
-
-              {user.bio && (
-                <p className="text-xs text-zinc-500 italic bg-zinc-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                  &quot;{user.bio}&quot;
-                </p>
-              )}
-            </div>
-          );
-        })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-
     </div>
   );
 }
